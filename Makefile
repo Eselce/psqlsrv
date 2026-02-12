@@ -129,6 +129,7 @@ $(exe_file):	$(bld_files)
 	$(CC) $(CPPSTYLE) $^ $(CPPLIBS) -o $@
 
 $(bld_files):	$(BUILDDIR)/%.o:	$(SRCDIR)/%.cpp $(INCLUDEDIR)/%.hpp
+	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -I $(INCLUDEDIR) $(CPPOPTS) $< -o $@
 
 $(BUILDDIR)/httpsrv.o:	$(HTTPLIBINC)
