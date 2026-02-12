@@ -35,7 +35,7 @@ Clean all intermediate files and installed server:
 make cleanall
 ```
 
-Create a simple backup of source files in attic;
+Create a simple backup of source files in attic:
 ```bash
 make attic
 ```
