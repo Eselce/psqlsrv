@@ -2,10 +2,16 @@
 
 C++20 project with access to PostgreSQL and HTTP.
 
-Build server and run:
+Compile server and run:
 ```bash
 make
-./server
+./bin/server
+```
+
+Build server and run:
+```bash
+make build
+server
 ```
 
 Install server in ~/bin and run:
@@ -18,6 +24,16 @@ Build and install server in ~/bin and run:
 ```bash
 make all
 server
+```
+
+Run server in ~/bin:
+```bash
+make run
+```
+
+Debug server in ~/bin:
+```bash
+make rundebug
 ```
 
 Clean intermediate *.o files:
@@ -37,11 +53,15 @@ make cleanall
 
 Create a simple backup of source files in attic:
 ```bash
-make attic
+make backup
+```
+
+Clean simple backup in attic:
+```bash
+make cleanbackup
 ```
 
 Download latest version of cpp-httplib and compare:
 ```bash
 make deps
 ```
-
