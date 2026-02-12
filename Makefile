@@ -57,7 +57,7 @@ DEFAULT    := $(exe_file)
 
 .MAIN:	default
 
-.PHONY:	default all build clean cleanall cleanobj cleanbackup debug install installdebug run rundebug deps backup
+.PHONY:	default all build clean cleanall cleanobj cleanbackup cleandeps debug install installdebug run rundebug deps backup
 
 default:	$(BUILDDIR) $(DEFAULT)
 
@@ -79,7 +79,7 @@ rundebug:	installdebug
 
 backup:	cleanbackup $(ATTICDIR) $(att_files)
 
-deps:	$(HTTPLIBDIR) $(HTTPLIBALL)
+deps:	cleandeps $(HTTPLIBDIR) $(HTTPLIBALL)
 	-diff -b $(HTTPLIBINC) $(HTTPLIBDIR)/$(HTTPLIB_H)
 
 clean:	cleanobj
@@ -97,6 +97,10 @@ cleanbackup:	$(ATTICDIR)
 	-rmdir $(ATTICDIRS)
 	rmdir -p $(ATTICDIR)
 
+cleandeps:	$(HTTPLIBDIR)
+	$(RM) $(HTTPLIBALL)
+	rmdir -p $(HTTPLIBDIR)
+
 $(BUILDDIR):
 	mkdir -p $@/
 
@@ -110,8 +114,9 @@ $(att_files):	$(ATTICDIR)/%:	%
 	@mkdir -p $(dir $@)
 	cp -p $< $@
 
-$(HTTPLIBALL):	$(HTTPLIBDIR)/%:	% $(HTTPLIBDIR)
-	curl -fsSL $(HTTPLIBSRC)/$< -o $@
+$(HTTPLIBALL):	$(HTTPLIBDIR)/%:	$(HTTPLIBDIR)
+	@mkdir -p $(dir $@)
+	curl -fsSL $(HTTPLIBSRC)/$(notdir $@) -o $@
 
 .cpp.o:
 	$(CC) $(CFLAGS) $(CPPOPTS) $< -o $@
