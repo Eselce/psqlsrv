@@ -1,8 +1,5 @@
 
-#include <iostream>
-
-#include "httpsrv.hpp"
-#include "pgconn.hpp"
+#include "main.hpp"
 
 int main(int argc, char **argv)
 {
