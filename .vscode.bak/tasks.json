@@ -1,0 +1,121 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "make-debug",
+            "type": "shell",
+            "command": "make",
+            "args": ["DEBUG=1", "default"],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": ["$gcc"]
+        },
+        {
+            "label": "make-release",
+            "type": "shell",
+            "command": "make",
+            "args": ["DEBUG=0", "default"],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": ["$gcc"]
+        },
+        {
+            "label": "make-plain",
+            "type": "shell",
+            "command": "make",
+            "args": ["default"],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+            "problemMatcher": ["$gcc"]
+        },
+        {
+            "label": "build-debug",
+            "type": "shell",
+            "command": "make",
+            "args": ["DEBUG=1", "build"],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+            "problemMatcher": ["$gcc"]
+        },
+        {
+            "label": "build-release",
+            "type": "shell",
+            "command": "make",
+            "args": ["DEBUG=0", "build"],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+            "problemMatcher": ["$gcc"]
+        },
+        {
+            "label": "build-plain",
+            "type": "shell",
+            "command": "make",
+            "args": ["build"],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+            "problemMatcher": ["$gcc"]
+        },
+        {
+            "label": "Run server",
+            "type": "shell",
+            "command": "release/server",
+            "group": "test",
+            "dependsOn": "make-release"
+        },
+        {
+            "label": "Debug server",
+            "type": "shell",
+            "command": "gdb debug/serverD",
+            "group": "test",
+            "dependsOn": "make-debug"
+        },
+        {
+            "label": "make-tests",
+            "type": "shell",
+            "command": "make",
+            "args": ["DEBUG=0", "tests"],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": ["$gcc"]
+        },
+        {
+            "label": "Run tests",
+            "type": "shell",
+            "command": "release/tests",
+            "group": "test",
+            "dependsOn": "make-tests"
+        },
+        {
+            "label": "make-tests-debug",
+            "type": "shell",
+            "command": "make",
+            "args": ["DEBUG=1", "tests"],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": ["$gcc"]
+        },
+        {
+            "label": "Run tests-debug",
+            "type": "shell",
+            "command": "debug/testsD",
+            "group": "test",
+            "dependsOn": "make-tests-debug"
+        }
+    ]
+}
