@@ -5,7 +5,9 @@
 
 #include "postgresql/libpq-fe.h"
 
-class PGconnection
+#include "dbconn.hpp"
+
+class PGconnection : public DBconnection
 {
 public:
 	PGconnection(void);
@@ -19,30 +21,22 @@ public:
 	virtual ~PGconnection(void);
 
 public:
-	PGconn *connect(const std::string &connectstr = "", const bool blocking = false);
+	virtual bool check(void);
 
-	PGconn *connect(const char *conninfo, const bool blocking = false);
+	virtual void disconnect(void);
 
-	PGconn *connect(const char * const *keys, const char * const *vals, const bool blocking = false, const int expand_dbname = 0);
+	virtual std::string status(void) const;
 
-	PGconn *connect(const char *host, const char *port, const char *options, const char *dbName, const char *login = NULL, const char *pwd = NULL);
-
-	bool check(void);
-
-	void disconnect(void);
-
-	std::string status(void) const;
-
-	PostgresPollingStatusType poll(void);
-
-	void dumpoptions(void) const;
+	virtual void dumpoptions(void) const;
 
 protected:
-	static PGconn *connectdb(const char *conninfo, const bool blocking = false);
+	PostgresPollingStatusType poll(void);
 
-	static PGconn *connectdb(const char * const *keys, const char * const *vals, const bool blocking = false, const int expand_dbname = 0);
+	virtual bool connectdb(const char *conninfo, const bool blocking = false);
 
-	static PGconn *connectdb(const char *host, const char *port, const char *options, const char *dbName, const char *login = NULL, const char *pwd = NULL);
+	virtual bool connectdb(const char * const *keys, const char * const *vals, const bool blocking = false, const int expand_dbname = 0);
+
+	virtual bool connectdb(const char *host, const char *port, const char *options, const char *dbName, const char *login = NULL, const char *pwd = NULL);
 
 	static void dumpoptionarr(void);
 
@@ -52,11 +46,6 @@ protected:
 
 	static void dumpoptions(PQconninfoOption *options);
 
-	static void dumpconninfo(const char * const *keys, const char * const *vals);
-
-	void exit_nicely(void);
-
 protected:
 	PGconn *m_pConn;
 };
-
