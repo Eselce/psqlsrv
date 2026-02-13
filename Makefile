@@ -1,8 +1,8 @@
-CC         := g++
-#CC         := clang
-WFLAGS     := -Wall
-DEBFLAGS   := -g -D DEBUG
-RELFLAGS   := -O2 -D NDEBUG
+CXX        := g++
+#CXX        := clang
+WFLAGS     := -Wall -Wextra
+DEBFLAGS   := -g -D_DEBUG
+RELFLAGS   := -O2 -DNDEBUG
 CPPNUMBER  := 20
 SRCDIR     := src
 INCLUDEDIR := include
@@ -10,6 +10,7 @@ VSCODEDIR  := .vscode
 ATTICDIR   := attic
 SAVEDIRS   := $(VSCODEDIR) $(INCLUDEDIR) $(SRCDIR)
 ATTICDIRS  := $(SAVEDIRS:%=$(ATTICDIR)/%)
+BUILDSUFF  :=
 BUILDDIR   := bin
 BINDIR     := ~/bin
 MAKEFILE   := Makefile
@@ -21,18 +22,39 @@ server_exe := server
 server_cpp := main.cpp httpsrv.cpp pgconn.cpp
 CPPVERSION := c++$(CPPNUMBER)
 CPPSTYLE   := -std=$(CPPVERSION)
-CFLAGSDEB  := -c $(WFLAGS) $(DEBFLAGS)
-CFLAGSREL  := -c $(WFLAGS) $(RELFLAGS)
-CFLAGS     := $(CFLAGSDEB)
+CFLAGSDEB  := $(WFLAGS) $(DEBFLAGS)
+CFLAGSREL  := $(WFLAGS) $(RELFLAGS)
+
+ifeq ($(DEBUG),1)
+CXXCONFIG  := $(CFLAGSDEB)
+BUILDSUFF  := D
+BUILDDIR   := debug
+else
+ifeq ($(DEBUG),0)
+CXXCONFIG  := $(CFLAGSREL)
+BUILDDIR   := release
+else
+BUILDSUFF  := _
+endif
+endif
+
+exe_file   := $(BUILDDIR)/$(server_exe)$(BUILDSUFF)
+bin_file   := $(BINDIR)/$(server_exe)$(BUILDSUFF)
+
 LDFLAGS    := 
 PGLIBS     := -L/usr/lib/x86_64-linux-gnu -lpq
 HTTPLIBS   := 
 HTTPSLIBS  := -lssl -lcrypto
-CPPLIBS    := $(LDFLAGS) $(PGLIBS)
-#CPPLIBS    := $(LDFLAGS) $(PGLIBS) $(HTTPLIBS) $(HTTPSLIBS)
+CXXLIBS    := $(LDFLAGS) $(PGLIBS)
+#CXXLIBS    := $(LDFLAGS) $(PGLIBS) $(HTTPLIBS) $(HTTPSLIBS)
+CFLAGS     := 
 CPPFLAGS   := 
 #CPPFLAGS   := -I/usr/include/postgresql
-CPPOPTS    := $(CPPSTYLE) $(CPPFLAGS)
+CPPOPTS    := $(CPPSTYLE)
+#CPPOPTS    := $(CPPSTYLE) $(CFLAGS) $(CPPFLAGS)
+LXXFLAGS   := $(CPPOPTS) $(CXXLIBS)
+CXXFLAGS   := $(CPPOPTS) $(CXXCONFIG) -I $(INCLUDEDIR)
+
 HTTPLIBDIR := cpp-httplib
 HTTPLIBDOC := README.md
 HTTPLIB_H  := httplib.h
@@ -40,8 +62,7 @@ HTTPLIBSRC := https://raw.githubusercontent.com/yhirose/cpp-httplib/refs/heads/m
 HTTPLIBDAT := $(HTTPLIB_H) $(HTTPLIBDOC)
 HTTPLIBALL := $(HTTPLIBDAT:%=$(HTTPLIBDIR)/%)
 HTTPLIBINC := $(HTTPLIB_H:%=$(INCLUDEDIR)/%)
-exe_file   := $(BUILDDIR)/$(server_exe)
-bin_file   := $(BINDIR)/$(server_exe)
+
 cpp_files  := $(server_cpp)
 obj_files  := $(cpp_files:.cpp=.o)
 hpp_files  := $(cpp_files:.cpp=.hpp)
@@ -57,7 +78,7 @@ DEFAULT    := $(exe_file)
 
 .MAIN:	default
 
-.PHONY:	default all build clean cleanall cleanobj cleanbackup cleandeps debug install installdebug run rundebug deps backup
+.PHONY:	default all build buildall clean cleanall cleanobj cleanbackup cleandeps install installdebug run rundebug deps backup
 
 default:	$(BUILDDIR) $(DEFAULT)
 
@@ -65,11 +86,11 @@ all:	deps install backup
 
 build:	cleanall install
 
-debug:	default
+buildall:	deps cleanall install backup
 
 install:	default $(all_files)
 
-installdebug:	debug $(all_files)
+installdebug:	default $(all_files)
 
 run:	install
 	$(bin_file)
@@ -119,18 +140,18 @@ $(HTTPLIBALL):	$(HTTPLIBDIR)/%:	$(HTTPLIBDIR)
 	curl -fsSL $(HTTPLIBSRC)/$(notdir $@) -o $@
 
 .cpp.o:
-	$(CC) $(CFLAGS) $(CPPOPTS) $< -o $@
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 $(bin_file):	$(exe_file)
 	#mv -Tfuv $< $@
 	cp -p $< $@
 
 $(exe_file):	$(bld_files)
-	$(CC) $(CPPSTYLE) $^ $(CPPLIBS) -o $@
+	$(CXX) $^ $(LXXFLAGS) -o $@
 
 $(bld_files):	$(BUILDDIR)/%.o:	$(SRCDIR)/%.cpp $(INCLUDEDIR)/%.hpp
 	@mkdir -p $(dir $@)
-	$(CC) $(CFLAGS) -I $(INCLUDEDIR) $(CPPOPTS) $< -o $@
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 $(BUILDDIR)/httpsrv.o:	$(HTTPLIBINC)
 

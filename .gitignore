@@ -1,3 +1,5 @@
 /.vscode
 /attic
 /bin
+/debug
+/release
