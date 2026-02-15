@@ -1,6 +1,8 @@
 
 #include <iostream>
 
+#include "postgresql/pg_config.h"
+
 #include "dbconn.hpp"
 
 DBconnection::DBconnection(void)
@@ -39,7 +41,7 @@ DBconnection *DBconnection::connect(const char *conninfo, const bool blocking)
 {
 	static const char *host = "localhost";
 	static const char *hostaddr = "127.0.0.1";
-	static const char *port = "5432";
+	static const char *port = DEF_PGPORT_STR; // "5432"
 	static const char *dbname = "loges";
 	static const char *user = "loges";
 	static const char *password = "";
@@ -108,3 +110,4 @@ void DBconnection::exit_nicely(void)
 
 	std::exit(1);
 }
+

@@ -1,4 +1,6 @@
 
+#include "pganswer.hpp"
+
 #include "pgconn.hpp"
 
 PGconnection::PGconnection(void)
@@ -79,38 +81,34 @@ bool PGconnection::connectdb(const char *host, const char *port, const char *opt
 	return (conn != NULL);
 }
 
+bool PGconnection::checkconnect(void)
+{
+	std::cout << this->status() << std::endl;
+
+	/* Set always-secure search path, so malicious users can't take control. */
+	DBanswer *res = this->exec("SELECT pg_catalog.set_config('search_path', '', false)", "SET failed");
+
+	if (res == NULL) {
+		return false;
+	}
+
+	delete res;
+
+	return true;
+}
+
 bool PGconnection::check(void)
 {
-	ConnStatusType status;
-	PGresult      *res;
-
-	status = PQstatus(this->m_pConn);
-
-	std::cout << this->status() << std::endl;
+	ConnStatusType status = PQstatus(this->m_pConn);
 
 	/* Check to see that the backend connection was successfully made */
 	if (status != CONNECTION_OK) {
 		std::cerr << PQerrorMessage(m_pConn) << std::endl;
 
-                this->exit_nicely();
-
-		return false;
-        }
-
-	/* Set always-secure search path, so malicious users can't take control. */
-	res = PQexec(m_pConn, "SELECT pg_catalog.set_config('search_path', '', false)");
-
-	if (PQresultStatus(res) != PGRES_TUPLES_OK) {
-		std::cerr << "SET failed: " << PQerrorMessage(m_pConn) << std::endl;
-
-		PQclear(res);
-
 		this->exit_nicely();
 
 		return false;
 	}
-
-	PQclear(res);
 
 	return true;
 }
@@ -143,6 +141,48 @@ std::string PGconnection::status(void) const
 	}
 
 	return ret;
+}
+
+DBanswer *PGconnection::exec(const char *command, const char *errmsg)
+{
+	if (! this->check()) {
+		return NULL;
+	}
+
+	PGresult *res = PQexec(this->m_pConn, command);
+
+	if (PQresultStatus(res) != PGRES_TUPLES_OK) {
+		std::cerr << errmsg << ": " << PQerrorMessage(m_pConn) << std::endl;
+
+		PQclear(res);
+
+		this->exit_nicely();
+
+		return NULL;
+	}
+
+	return new PGanswer(res);
+}
+
+DBanswer *PGconnection::exec(const char *command, const DBparameter &param, const char *errmsg)
+{
+	if (! this->check()) {
+		return NULL;
+	}
+
+	PGresult *res = PQexecParams(this->m_pConn, command, param.count(), param.types(), param.values(), param.lengths(), param.formats(), 0);
+
+	if (PQresultStatus(res) != PGRES_TUPLES_OK) {
+		std::cerr << errmsg << ": " << PQerrorMessage(m_pConn) << std::endl;
+
+		PQclear(res);
+
+		this->exit_nicely();
+
+		return NULL;
+	}
+
+	return new PGanswer(res);
 }
 
 void PGconnection::dumpoptions(void) const
@@ -207,3 +247,4 @@ void PGconnection::dumpoptions(PQconninfoOption *options)
 		PQconninfoFree(options);
 	}
 }
+

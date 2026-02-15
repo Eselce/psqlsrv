@@ -3,6 +3,10 @@
 
 #include <string>
 
+#include "dbparam.hpp"
+
+#include "dbanswer.hpp"
+
 class DBconnection
 {
 public:
@@ -25,11 +29,17 @@ public:
 
 	virtual DBconnection *connect(const char *host, const char *port, const char *options, const char *dbName, const char *login = NULL, const char *pwd = NULL);
 
+	virtual bool checkconnect(void) = 0;
+
 	virtual void disconnect(void);
 
 	virtual bool check(void) = 0;
 
 	virtual std::string status(void) const = 0;
+
+	virtual DBanswer *exec(const char *command, const char *errmsg = "Command failed") = 0;
+
+	virtual DBanswer *exec(const char *command, const DBparameter &param, const char *errmsg = "Command failed") = 0;
 
 	virtual void dumpoptions(void) const = 0;
 
@@ -44,3 +54,4 @@ protected:
 
 	virtual void exit_nicely(void);
 };
+

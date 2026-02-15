@@ -21,11 +21,17 @@ public:
 	virtual ~PGconnection(void);
 
 public:
+	virtual bool checkconnect(void);
+
 	virtual bool check(void);
 
 	virtual void disconnect(void);
 
 	virtual std::string status(void) const;
+
+	virtual DBanswer *exec(const char *command, const char *errmsg = "Command failed");
+
+	virtual DBanswer *exec(const char *command, const DBparameter &param, const char *errmsg = "Command failed");
 
 	virtual void dumpoptions(void) const;
 
@@ -49,3 +55,4 @@ protected:
 protected:
 	PGconn *m_pConn;
 };
+
