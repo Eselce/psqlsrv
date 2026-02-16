@@ -24,9 +24,8 @@
                     "ignoreFailures": true
                 }
             ],
-	    "preLaunchTask": "make-release",
-	    "miDebuggerPath": "/usr/bin/gdb",
-	    "sourceMap": {}
+            "preLaunchTask": "make-release",
+            "miDebuggerPath": "/usr/bin/gdb"
         },
         {
             "name": "Debug psqlsrv",
@@ -34,7 +33,7 @@
             "request": "launch",
             "program": "${workspaceFolder}/debug/serverD",
             "args": [],
-            "stopAtEntry": true,
+            "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
             "externalConsole": false,
@@ -45,15 +44,66 @@
                     "text": "-enable-pretty-printing",
                     "ignoreFailures": true
                 },
-		{
-		    "description": "Disassemblierungsvariante auf Intel festlegen",
-		    "text": "-gdb-set disassembly-flavor intel",
-		    "ignoreFailures": true
-		}
+                {
+                    "description": "Disassemblierungsvariante auf Intel festlegen",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                }
             ],
             "preLaunchTask": "make-debug",
-            "miDebuggerPath": "/usr/bin/gdb",
-            "sourceMap": {}
+            "miDebuggerPath": "/usr/bin/gdb"
+        },
+        {
+            "name": "Run new psqlsrv",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/release/server",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Automatische Strukturierung und Einrückung für gdb aktivieren",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Disassemblierungsvariante auf Intel festlegen",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "build-release",
+            "miDebuggerPath": "/usr/bin/gdb"
+        },
+        {
+            "name": "Debug new psqlsrv",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/debug/serverD",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Automatische Strukturierung und Einrückung für gdb aktivieren",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Disassemblierungsvariante auf Intel festlegen",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "build-debug",
+            "miDebuggerPath": "/usr/bin/gdb"
         },
         {
             "name": "Run tests",
@@ -78,9 +128,8 @@
                     "ignoreFailures": true
                 }
             ],
-	    "preLaunchTask": "make-tests",
-	    "miDebuggerPath": "/usr/bin/gdb",
-	    "sourceMap": {}
+            "preLaunchTask": "make-tests",
+            "miDebuggerPath": "/usr/bin/gdb"
         },
         {
             "name": "Debug tests",
@@ -88,7 +137,7 @@
             "request": "launch",
             "program": "${workspaceFolder}/debug/testsD",
             "args": [],
-            "stopAtEntry": true,
+            "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
             "externalConsole": false,
@@ -99,15 +148,14 @@
                     "text": "-enable-pretty-printing",
                     "ignoreFailures": true
                 },
-		{
-		    "description": "Disassemblierungsvariante auf Intel festlegen",
-		    "text": "-gdb-set disassembly-flavor intel",
-		    "ignoreFailures": true
-		}
+                {
+                    "description": "Disassemblierungsvariante auf Intel festlegen",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                }
             ],
             "preLaunchTask": "make-tests-debug",
-            "miDebuggerPath": "/usr/bin/gdb",
-            "sourceMap": {}
+            "miDebuggerPath": "/usr/bin/gdb"
         }
     ]
 }
