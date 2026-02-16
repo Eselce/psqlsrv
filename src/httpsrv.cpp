@@ -6,7 +6,8 @@
 static const std::string defaultip4 = "0.0.0.0";
 
 HTTPserver::HTTPserver(void)
-:	m_pSrv(NULL),
+:	NiceService(false, false, false, false),
+	m_pSrv(nullptr),
 	m_rulescount(0)
 {
 	// HTTP
@@ -17,7 +18,8 @@ HTTPserver::HTTPserver(void)
 }
 
 HTTPserver::HTTPserver(int port)
-:	m_pSrv(NULL),
+:	NiceService(false, false, false, false),
+	m_pSrv(nullptr),
 	m_rulescount(0)
 {
 	// HTTP
@@ -33,7 +35,6 @@ HTTPserver::HTTPserver(int port)
 
 HTTPserver::~HTTPserver(void)
 {
-	this->stop();
 }
 
 bool HTTPserver::start(int port)
@@ -54,12 +55,22 @@ bool HTTPserver::start(int port)
 
 void HTTPserver::stop(void)
 {
-	httplib::Server *pSrv = m_pSrv;
+	if (m_pSrv != nullptr) {
+		std::cerr << "Stopping server..." << std::endl;
+		httplib::Server *pSrv = m_pSrv;
 
-	m_pSrv = NULL;
-	m_rulescount = 0;
+		m_pSrv = nullptr;
+		m_rulescount = 0;
 
-	delete pSrv;
+		delete pSrv;
+	}
+}
+
+void HTTPserver::disconnect(const bool force)
+{
+	if ((m_pSrv != nullptr) && (force || this->getDisconnectOnError() || this->getExitOnError())) {
+		this->stop();
+	}
 }
 
 int HTTPserver::setupStatic(void)
@@ -71,6 +82,11 @@ int HTTPserver::setupStatic(void)
 	std::cout << this->m_rulescount << " rules created..." << std::endl;
 
 	return this->m_rulescount;
+}
+
+void HTTPserver::setDBConnection(DBconnection *conn)
+{
+	this->m_pConn = conn;
 }
 
 int HTTPserver::addStaticGet(const std::string &pattern, const std::string &out, const std::string &mimetype)
@@ -108,20 +124,30 @@ int HTTPserver::addGet(const std::string &pattern, const std::string (HTTPserver
 
 const std::string HTTPserver::testhandler(const httplib::Request &req)
 {
-	std::string ret = "";
+	// req.method			- GET
+	// req.version			- HTTP/1.1
+	// req.matched_route	- /dyn.*
+	// req.target           - /dynamisch?test=4
+	// req.path				- /dynamisch
+	// req.body		        - (empty)
+	// User-Agent: 			- Mozilla/5.0 (X11; Linux x86_64; rv:147.0) Gecko/20100101 Firefox/147.0
+	// Accept: 				- text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
+	// test (param):		- 4
+	// test (header):		- 0 (empty)
+	// test (param):		- 1 (4)
+	// test (trailer):		- 0 (empty)
+	// req.remote_addr		- 127.0.0.1
+	// req.remote_port		- 55356
+	std::string ret = req.method + " " + req.version + " " + req.path + " " + req.matched_route + " "
+			+ req.target + " " + req.get_header_value("User-Agent") + " " + req.get_header_value("Accept") + " "
+			+ std::to_string(req.get_header_value_count("test")) + " " + std::to_string(req.get_param_value_count("test")) + " "
+			+ std::to_string(req.get_trailer_value_count("test")) + " "	+ req.get_param_value("test") + " "
+			+ req.remote_addr + ":" + std::to_string(req.remote_port) + " -> " + req.body + "\n";
+	std::string query = req.get_param_value("test");
+	std::string answer = m_pConn->getanswer(("SELECT * FROM " + query).c_str(), "SELECT failed");
 
-	ret += req.method + ".";
-	ret += req.path + ".";
-       	ret += req.matched_route + ".";
-	ret += req.target;
+	ret += answer;
 
 	return ret;
-}
-
-void HTTPserver::exit_nicely(void)
-{
-	this->stop();
-
-	exit(1);
 }
 
