@@ -5,26 +5,26 @@
 
 PGconnection::PGconnection(void)
 :	DBconnection(),
-	m_pConn(NULL)
+	m_pConn(nullptr)
 {
 }
 
 PGconnection::PGconnection(const std::string &connectstr, const bool blocking)
 :	DBconnection(connectstr, blocking),
-	m_pConn(NULL)
+	m_pConn(nullptr)
 {
 }
 
 PGconnection::PGconnection(const char *conninfo, const bool blocking)
 :	DBconnection(conninfo, blocking),
-	m_pConn(NULL)
+	m_pConn(nullptr)
 {
 }
 
 // const int expand_dbname = 0;  // every entry is separate (0) or dbname contains parameters (1)
 PGconnection::PGconnection(const char * const *keys, const char * const *vals, const bool blocking, const int expand_dbname)
 :	DBconnection(keys, vals, blocking, expand_dbname),
-	m_pConn(NULL)
+	m_pConn(nullptr)
 {
 }
 
@@ -34,7 +34,7 @@ PGconnection::~PGconnection(void)
 
 bool PGconnection::connectdb(const char *conninfo, const bool blocking)
 {
-	PGconn *conn = NULL;
+	PGconn *conn = nullptr;
 
 	if (blocking) {
 		conn = PQconnectdb(conninfo);
@@ -44,13 +44,13 @@ bool PGconnection::connectdb(const char *conninfo, const bool blocking)
 
 	this->m_pConn = conn;
 
-	return (conn != NULL);
+	return (conn != nullptr);
 }
 
 // const int expand_dbname = 0;  // every entry is separate (0) or dbname contains parameters (1)
 bool PGconnection::connectdb(const char * const *keys, const char * const *vals, const bool blocking, const int expand_dbname)
 {
-	PGconn *conn = NULL;
+	PGconn *conn = nullptr;
 
 	PGconnection::dumpconninfo(keys, vals);
 
@@ -62,15 +62,15 @@ bool PGconnection::connectdb(const char * const *keys, const char * const *vals,
 
 	this->m_pConn = conn;
 
-	return (conn != NULL);
+	return (conn != nullptr);
 }
 
 bool PGconnection::connectdb(const char *host, const char *port, const char *options, const char *dbName, const char *login, const char *pwd)
 {
-	static const char *tty = NULL;
-	PGconn *conn = NULL;
+	static const char *tty = nullptr;
+	PGconn *conn = nullptr;
 
-	if (login == NULL) {
+	if (login == nullptr) {
 		conn = PQsetdb(host, port, options, tty, dbName);
 	} else {
 		conn = PQsetdbLogin(host, port, options, tty, dbName, login, pwd);
@@ -78,7 +78,7 @@ bool PGconnection::connectdb(const char *host, const char *port, const char *opt
 
 	this->m_pConn = conn;
 
-	return (conn != NULL);
+	return (conn != nullptr);
 }
 
 bool PGconnection::checkconnect(void)
@@ -86,13 +86,11 @@ bool PGconnection::checkconnect(void)
 	std::cout << this->status() << std::endl;
 
 	/* Set always-secure search path, so malicious users can't take control. */
-	DBanswer *res = this->exec("SELECT pg_catalog.set_config('search_path', '', false)", "SET failed");
+	const std::string answer = this->getanswer("SELECT pg_catalog.set_config('search_path', '', false)", "SET failed");
 
-	if (res == NULL) {
+	if (answer == DBconnection::m_error) {
 		return false;
 	}
-
-	delete res;
 
 	return true;
 }
@@ -103,7 +101,7 @@ bool PGconnection::check(void)
 
 	/* Check to see that the backend connection was successfully made */
 	if (status != CONNECTION_OK) {
-		std::cerr << PQerrorMessage(m_pConn) << std::endl;
+		std::cerr << PQerrorMessage(m_pConn);
 
 		this->exit_nicely();
 
@@ -113,16 +111,16 @@ bool PGconnection::check(void)
 	return true;
 }
 
-void PGconnection::disconnect(void)
+void PGconnection::disconnect(const bool force)
 {
-	if (m_pConn != NULL) {
+	if ((m_pConn != nullptr) && (force || this->getDisconnectOnError() || this->getExitOnError())) {
 		PQfinish(m_pConn);
 
-		m_pConn = NULL;
+		m_pConn = nullptr;
 	}
 }
 
-std::string PGconnection::status(void) const
+const std::string PGconnection::status(void) const
 {
 	std::string ret;
 
@@ -143,43 +141,45 @@ std::string PGconnection::status(void) const
 	return ret;
 }
 
-DBanswer *PGconnection::exec(const char *command, const char *errmsg)
+const DBanswer *PGconnection::exec(const char *command, const char *errmsg)
 {
 	if (! this->check()) {
-		return NULL;
+		return nullptr;
 	}
 
 	PGresult *res = PQexec(this->m_pConn, command);
+	ExecStatusType status = PQresultStatus(res);
 
-	if (PQresultStatus(res) != PGRES_TUPLES_OK) {
-		std::cerr << errmsg << ": " << PQerrorMessage(m_pConn) << std::endl;
+	if ((status != PGRES_TUPLES_OK) && (status != PGRES_COMMAND_OK)) {
+		std::cerr << errmsg << ": " << PQerrorMessage(m_pConn);
 
 		PQclear(res);
 
 		this->exit_nicely();
 
-		return NULL;
+		return nullptr;
 	}
 
 	return new PGanswer(res);
 }
 
-DBanswer *PGconnection::exec(const char *command, const DBparameter &param, const char *errmsg)
+const DBanswer *PGconnection::exec(const char *command, const DBparameter &param, const char *errmsg)
 {
 	if (! this->check()) {
-		return NULL;
+		return nullptr;
 	}
 
 	PGresult *res = PQexecParams(this->m_pConn, command, param.count(), param.types(), param.values(), param.lengths(), param.formats(), 0);
+	ExecStatusType status = PQresultStatus(res);
 
-	if (PQresultStatus(res) != PGRES_TUPLES_OK) {
-		std::cerr << errmsg << ": " << PQerrorMessage(m_pConn) << std::endl;
+	if ((status != PGRES_TUPLES_OK) && (status != PGRES_COMMAND_OK)) {
+		std::cerr << errmsg << ": " << PQerrorMessage(m_pConn);
 
 		PQclear(res);
 
 		this->exit_nicely();
 
-		return NULL;
+		return nullptr;
 	}
 
 	return new PGanswer(res);
@@ -215,7 +215,7 @@ void PGconnection::dumpoptionarr(char *conninfo, char **errmsg)
 
 	PGconnection::dumpoptions(options);
 
-	if (errmsg != NULL) {
+	if (errmsg != nullptr) {
 		std::cerr << *errmsg << std::endl;
 
 		PQfreemem(*errmsg);
@@ -224,10 +224,10 @@ void PGconnection::dumpoptionarr(char *conninfo, char **errmsg)
 
 void PGconnection::dumpoptions(PQconninfoOption *options)
 {
-	if (options == NULL) {
+	if (options == nullptr) {
 		// TODO
 	} else {
-		for (int index = 0; options[index].keyword != NULL; ++index) {
+		for (int index = 0; options[index].keyword != nullptr; ++index) {
 			PQconninfoOption &option = options[index];
 
 			std::cout << option.keyword << " = ";

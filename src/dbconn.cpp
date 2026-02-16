@@ -5,29 +5,34 @@
 
 #include "dbconn.hpp"
 
+const char *DBconnection::m_error = "ERROR";
+
 DBconnection::DBconnection(void)
+:	NiceService(false, false, false, false)
 {
 }
 
 DBconnection::DBconnection(const std::string &connectstr, const bool blocking)
+:	NiceService(false, false, blocking, false)
 {
-	this->connect(connectstr, blocking);
+	this->connect(connectstr, this->getBlocking());
 }
 
 DBconnection::DBconnection(const char *conninfo, const bool blocking)
+:	NiceService(false, false, blocking, false)
 {
-	this->connect(conninfo, blocking);
+	this->connect(conninfo, this->getBlocking());
 }
 
 // const int expand_dbname = 0;  // every entry is separate (0) or dbname contains parameters (1)
 DBconnection::DBconnection(const char * const *keys, const char * const *vals, const bool blocking, const int expand_dbname)
+:	NiceService(false, blocking, false)
 {
-	this->connect(keys, vals, blocking, expand_dbname);
+	this->connect(keys, vals, this->getBlocking(), expand_dbname);
 }
 
 DBconnection::~DBconnection(void)
 {
-	this->disconnect();
 }
 
 DBconnection *DBconnection::connect(const std::string &connectstr, const bool blocking)
@@ -47,16 +52,16 @@ DBconnection *DBconnection::connect(const char *conninfo, const bool blocking)
 	static const char *password = "";
 //	static const char *passfile = "~/.PGpass";
 	static const char *options = "";
-	static const char *keys[] = { "host", "hostaddr", "port", "dbname", "user", /*"password", "passfile",*/ NULL };
-	static const char *vals[] = { host, hostaddr, port, dbname, user, /*password, passfile,*/ NULL };
+	static const char *keys[] = { "host", "hostaddr", "port", "dbname", "user", /*"password", "passfile",*/ nullptr };
+	static const char *vals[] = { host, hostaddr, port, dbname, user, /*password, passfile,*/ nullptr };
 
-	const bool defaultconn = ((conninfo == NULL) || (! *conninfo));
+	const bool defaultconn = ((conninfo == nullptr) || (! *conninfo));
 	bool connected = false;
 
 	this->disconnect();
 
 	if (defaultconn) {
-		if (conninfo != NULL) {
+		if (conninfo != nullptr) {
 			static const int expand_dbname = 0;  // every entry is separate (0) or dbname contains parameters (1)
 
 			connected = this->connectdb(keys, vals, blocking, expand_dbname);
@@ -67,7 +72,7 @@ DBconnection *DBconnection::connect(const char *conninfo, const bool blocking)
 		connected = this->connectdb(conninfo, blocking);
 	}
 
-	return (connected ? this : NULL);
+	return (connected ? this : nullptr);
 }
 
 // const int expand_dbname = 0;  // every entry is separate (0) or dbname contains parameters (1)
@@ -81,7 +86,7 @@ DBconnection *DBconnection::connect(const char * const *keys, const char * const
 
 	this->dumpoptions();
 
-	return (connected ? this : NULL);
+	return (connected ? this : nullptr);
 }
 
 DBconnection *DBconnection::connect(const char *host, const char *port, const char *options, const char *dbName, const char *login, const char *pwd)
@@ -90,24 +95,60 @@ DBconnection *DBconnection::connect(const char *host, const char *port, const ch
 
 	bool connected = this->connectdb(host, port, options, dbName, login, pwd);
 
-	return (connected ? this : NULL);
+	return (connected ? this : nullptr);
 }
 
-void DBconnection::disconnect(void)
+const std::string DBconnection::getanswer(const char *command, const char *errmsg)
 {
+	const DBanswer *answ = this->exec(command, errmsg);
+
+	const std::string answer = this->answerstring(answ);
+
+#if defined(_DEBUG)
+	if (this->getVerbose()) {
+		std::clog << "[" << this << "] " << command << " -> " << answer << std::endl;
+	}
+#endif
+
+	if (answ != nullptr) {
+		delete answ;
+	}
+
+	return answer;
+}
+
+const std::string DBconnection::getanswer(const char *command, const DBparameter &param, const char *errmsg)
+{
+	const DBanswer *answ = this->exec(command, param, errmsg);
+
+	const std::string answer = this->answerstring(answ);
+
+#if defined(_DEBUG)
+	if (this->getVerbose()) {
+		std::clog << "[" << this << "] " << command << " -> " << answer << std::endl;
+	}
+#endif
+
+	if (answ != nullptr) {
+		delete answ;
+	}
+
+	return answer;
+}
+
+const std::string DBconnection::answerstring(const DBanswer *answ)
+{
+	if (answ == nullptr) {
+		return DBconnection::m_error;
+	}
+
+	return answ->getanswer();
 }
 
 void DBconnection::dumpconninfo(const char * const *keys, const char * const *vals)
 {
-	for (int index = 0; (keys[index] != NULL) && *keys[index]; ++index) {
+	for (int index = 0; (keys[index] != nullptr) && *keys[index]; ++index) {
 		std::cout << keys[index] << " = " << vals[index] << std::endl;
 	}
-}
-
-void DBconnection::exit_nicely(void)
-{
-	this->disconnect();
-
-	std::exit(1);
 }
 

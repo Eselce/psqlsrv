@@ -7,10 +7,14 @@
 
 #include "httplib.h"
 
+#include "dbconn.hpp"
+
+#include "nicesvc.hpp"
+
 static const int defaultport = 8080;
 static const std::string textplain = "text/plain";
 
-class HTTPserver
+class HTTPserver : public NiceService
 {
 public:
 	HTTPserver(void);
@@ -26,6 +30,8 @@ public:
 
 	int setupStatic();
 
+	void setDBConnection(DBconnection *conn);
+
 protected:
 	int addStaticGet(const std::string &cmd, const std::string &out, const std::string &mimetype = textplain);
 
@@ -33,11 +39,13 @@ protected:
 
 	const std::string testhandler(const httplib::Request &req);
 
-	void exit_nicely(void);
+	virtual void disconnect(const bool force = true);
 
 protected:
 	httplib::Server *m_pSrv;
 
 	int m_rulescount;
+
+	DBconnection *m_pConn;
 };
 

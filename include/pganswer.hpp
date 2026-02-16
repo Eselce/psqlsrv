@@ -12,6 +12,9 @@ public:
 
 	virtual ~PGanswer(void);
 
+public:
+	virtual const std::string getanswer(void) const override;
+
 protected:
 	PGresult *m_pRes;
 };

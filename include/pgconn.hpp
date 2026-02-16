@@ -7,6 +7,8 @@
 
 #include "dbconn.hpp"
 
+static const char *cmdErrorMsg = "Command failed";
+
 class PGconnection : public DBconnection
 {
 public:
@@ -25,13 +27,13 @@ public:
 
 	virtual bool check(void);
 
-	virtual void disconnect(void);
+	virtual void disconnect(const bool force = true);
 
-	virtual std::string status(void) const;
+	virtual const std::string status(void) const;
 
-	virtual DBanswer *exec(const char *command, const char *errmsg = "Command failed");
+	virtual const DBanswer *exec(const char *command, const char *errmsg = cmdErrorMsg);
 
-	virtual DBanswer *exec(const char *command, const DBparameter &param, const char *errmsg = "Command failed");
+	virtual const DBanswer *exec(const char *command, const DBparameter &param, const char *errmsg = cmdErrorMsg);
 
 	virtual void dumpoptions(void) const;
 
@@ -42,7 +44,7 @@ protected:
 
 	virtual bool connectdb(const char * const *keys, const char * const *vals, const bool blocking = false, const int expand_dbname = 0);
 
-	virtual bool connectdb(const char *host, const char *port, const char *options, const char *dbName, const char *login = NULL, const char *pwd = NULL);
+	virtual bool connectdb(const char *host, const char *port, const char *options, const char *dbName, const char *login = nullptr, const char *pwd = nullptr);
 
 	static void dumpoptionarr(void);
 
