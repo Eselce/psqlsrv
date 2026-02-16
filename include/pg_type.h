@@ -4,7 +4,7 @@
 // Substitution for server side pg_type.h
 // until it's clear what the fuzz is about!
 
-#ifndef	OIDOID
+#if !defined(OIDOID)
 
 #define BOOLOID		    16
 #define BYTEAOID	    17
