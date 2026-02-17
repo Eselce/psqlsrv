@@ -31,9 +31,9 @@ public:
 
 	virtual const std::string status(void) const;
 
-	virtual const DBanswer *exec(const char *command, const char *errmsg = cmdErrorMsg);
+	virtual const DBanswer *exec(const char *command, const char *errmsg = cmdErrorMsg, const DBparameterFormat resultFormat = FORMAT_TEXT);
 
-	virtual const DBanswer *exec(const char *command, const DBparameter &param, const char *errmsg = cmdErrorMsg);
+	virtual const DBanswer *exec(const char *command, const DBparameter &param, const char *errmsg = cmdErrorMsg, const DBparameterFormat resultFormat = FORMAT_TEXT);
 
 	virtual void dumpoptions(void) const;
 

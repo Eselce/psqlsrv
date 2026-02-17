@@ -13,7 +13,7 @@ public:
 	virtual ~PGanswer(void);
 
 public:
-	virtual const std::string getanswer(void) const override;
+	virtual const std::string getanswer(const DBparameterFormat resultFormat = FORMAT_TEXT) const override;
 
 protected:
 	PGresult *m_pRes;

@@ -141,7 +141,7 @@ const std::string PGconnection::status(void) const
 	return ret;
 }
 
-const DBanswer *PGconnection::exec(const char *command, const char *errmsg)
+const DBanswer *PGconnection::exec(const char *command, const char *errmsg, const DBparameterFormat /*resultFormat*/)
 {
 	if (! this->check()) {
 		return nullptr;
@@ -163,13 +163,13 @@ const DBanswer *PGconnection::exec(const char *command, const char *errmsg)
 	return new PGanswer(res);
 }
 
-const DBanswer *PGconnection::exec(const char *command, const DBparameter &param, const char *errmsg)
+const DBanswer *PGconnection::exec(const char *command, const DBparameter &param, const char *errmsg, const DBparameterFormat resultFormat)
 {
 	if (! this->check()) {
 		return nullptr;
 	}
 
-	PGresult *res = PQexecParams(this->m_pConn, command, param.count(), param.types(), param.values(), param.lengths(), param.formats(), 0);
+	PGresult *res = PQexecParams(this->m_pConn, command, param.count(), param.types(), param.values(), param.lengths(), param.formats(), resultFormat);
 	ExecStatusType status = PQresultStatus(res);
 
 	if ((status != PGRES_TUPLES_OK) && (status != PGRES_COMMAND_OK)) {

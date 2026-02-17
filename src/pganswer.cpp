@@ -13,35 +13,40 @@ PGanswer::~PGanswer(void)
 	PQclear(m_pRes);
 }
 
-const std::string PGanswer::getanswer(void) const
+const std::string PGanswer::getanswer(const DBparameterFormat resultFormat) const
 {
 	ExecStatusType status = PQresultStatus(m_pRes);
+	std::string answer = "";
 
 	if (status == PGRES_TUPLES_OK) {
-		int ntuples = PQntuples(m_pRes);
-		int nfields = PQnfields(m_pRes);
-		std::string answer = "";
+		if (resultFormat == FORMAT_TEXT) {
+			const int ntuples = PQntuples(m_pRes);
+			const int nfields = PQnfields(m_pRes);
 
-		for (int row = 0; row < ntuples; ++row) {
-			for (int col = 0; col < nfields; ++col) {
-				char *value = PQgetvalue(m_pRes, row, col);
+			for (int row = 0; row < ntuples; ++row) {
+				for (int col = 0; col < nfields; ++col) {
+					char *value = PQgetvalue(m_pRes, row, col);
 
-				answer += (value ? value : "NULL");
+					answer += (value ? value : "NULL");
 
-				if (col < (nfields - 1)) {
-					answer += ",";
+					if (col < (nfields - 1)) {
+						answer += ",";
+					}
+				}
+
+				if (row < (ntuples - 1)) {
+					answer += "\n";
 				}
 			}
-
-			if (row < (ntuples - 1)) {
-				answer += "\n";
-			}
+		} else if (resultFormat == FORMAT_BINARY) {
+			answer = "BINARY DATA";
+		} else {
+			answer = "UNKNOWN FORMAT";
 		}
-		return answer;
 	} else if (status == PGRES_COMMAND_OK) {
-		return "OK";
-	} else {
-		return "";
+		answer = "OK";
 	}
+
+	return answer;
 }
 

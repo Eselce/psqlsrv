@@ -30,7 +30,7 @@ public:
 	virtual const Oid *types(void) const;
 
 protected:
-	virtual void setany(const void *value, const int pos, const Oid type, const int length = 0, const int format = 0);
+	virtual void setany(const void *value, const int pos, const Oid type, const int length = 0, const DBparameterFormat format = FORMAT_BINARY);
 
 protected:
 };

@@ -3,7 +3,15 @@
 
 #include <string>
 
-typedef unsigned int DBtype;
+// General C++ type for type parameter in DBparameter::setany()...
+typedef unsigned int DBparameterType;
+
+// Possible values for format parameter in DBparameter::setany()...
+typedef enum
+{
+	FORMAT_TEXT	= 0,	// 0: FORMAT_TEXT   - Text format
+	FORMAT_BINARY		// 1: FORMAT_BINARY - Binary format
+} DBparameterFormat;
 
 class DBparameter
 {
@@ -29,7 +37,7 @@ public:
 
 	virtual int count(void) const;
 
-	virtual const DBtype *types(void) const;
+	virtual const DBparameterType *types(void) const;
 
 	virtual const char * const *values(void) const;
 
@@ -40,17 +48,17 @@ public:
 protected:
 	virtual void resize(const int nParams);
 
-	virtual void setany(const void *value, const int pos, const DBtype type, const int length = 0, const int format = 0);
+	virtual void setany(const void *value, const int pos, const DBparameterType type, const int length = 0, const DBparameterFormat format = FORMAT_BINARY);
 
 protected:
 	int m_nParams;
 
-	DBtype *m_types;
+	DBparameterType *m_types;
 
 	const char * *m_values;
 
 	int *m_lengths;
 
-	int *m_formats;
+	DBparameterFormat *m_formats;
 };
 

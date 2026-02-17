@@ -143,8 +143,8 @@ const std::string HTTPserver::testhandler(const httplib::Request &req)
 			+ std::to_string(req.get_header_value_count("test")) + " " + std::to_string(req.get_param_value_count("test")) + " "
 			+ std::to_string(req.get_trailer_value_count("test")) + " "	+ req.get_param_value("test") + " "
 			+ req.remote_addr + ":" + std::to_string(req.remote_port) + " -> " + req.body + "\n";
-	std::string query = req.get_param_value("test");
-	std::string answer = m_pConn->getanswer(("SELECT * FROM " + query).c_str(), "SELECT failed");
+	std::string query = "SELECT * FROM " + req.get_param_value("test");
+	std::string answer = m_pConn->getanswer(query.c_str(), "SELECT failed");
 
 	ret += answer;
 

@@ -14,37 +14,39 @@ PGparameter::~PGparameter(void)
 {
 }
 
-void PGparameter::setany(const void *value, const int pos, const Oid type, const int length, const int format)
+void PGparameter::setany(const void *value, const int pos, const Oid type, const int length, const DBparameterFormat format)
 {
-	m_types[pos] = static_cast<DBtype>(type);
-	m_values[pos] = static_cast<const char *>(value);
-	m_lengths[pos] = length;
-	m_formats[pos] = format;
+	const int i = pos - 1;  // pos is 1-based, but arrays are 0-based
+
+	m_types[i] = type;
+	m_values[i] = static_cast<const char *>(value);
+	m_lengths[i] = length;
+	m_formats[i] = format;
 }
 
 void PGparameter::set(const int &value, const int pos)
 {
-	this->setany(&value, pos, INT4OID, sizeof(int), 0);
+	this->setany(&value, pos, INT4OID, sizeof(int), FORMAT_BINARY);
 }
 
 void PGparameter::set(const short int &value, const int pos)
 {
-	this->setany(&value, pos, INT2OID, sizeof(short int), 0);
+	this->setany(&value, pos, INT2OID, sizeof(short int), FORMAT_BINARY);
 }
 
 void PGparameter::set(const long int &value, const int pos)
 {
-	this->setany(&value, pos, INT8OID, sizeof(long int), 0);
+	this->setany(&value, pos, INT8OID, sizeof(long int), FORMAT_BINARY);
 }
 
 void PGparameter::set(const float &value, const int pos)
 {
-	this->setany(&value, pos, FLOATOID, sizeof(float), 0);
+	this->setany(&value, pos, FLOATOID, sizeof(float), FORMAT_BINARY);
 }
 
 void PGparameter::set(const double &value, const int pos)
 {
-	this->setany(&value, pos, DOUBLEOID, sizeof(double), 0);
+	this->setany(&value, pos, DOUBLEOID, sizeof(double), FORMAT_BINARY);
 }
 
 void PGparameter::set(const std::string &value, const int pos)
@@ -54,7 +56,7 @@ void PGparameter::set(const std::string &value, const int pos)
 
 void PGparameter::set(const char *value, const int pos)
 {
-	this->setany(value, pos, VARCHAROID, std::strlen(value), 0);
+	this->setany(value, pos, VARCHAROID, std::strlen(value), FORMAT_TEXT);
 }
 
 const Oid *PGparameter::types(void) const

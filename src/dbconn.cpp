@@ -98,11 +98,11 @@ DBconnection *DBconnection::connect(const char *host, const char *port, const ch
 	return (connected ? this : nullptr);
 }
 
-const std::string DBconnection::getanswer(const char *command, const char *errmsg)
+const std::string DBconnection::getanswer(const char *command, const char *errmsg, const DBparameterFormat resultFormat)
 {
-	const DBanswer *answ = this->exec(command, errmsg);
+	const DBanswer *answ = this->exec(command, errmsg, resultFormat);
 
-	const std::string answer = this->answerstring(answ);
+	const std::string answer = ((resultFormat == FORMAT_TEXT) ? this->answerstring(answ) : this->binaryanswer(answ));
 
 #if defined(_DEBUG)
 	if (this->getVerbose()) {
@@ -117,11 +117,11 @@ const std::string DBconnection::getanswer(const char *command, const char *errms
 	return answer;
 }
 
-const std::string DBconnection::getanswer(const char *command, const DBparameter &param, const char *errmsg)
+const std::string DBconnection::getanswer(const char *command, const DBparameter &param, const char *errmsg, const DBparameterFormat resultFormat)
 {
-	const DBanswer *answ = this->exec(command, param, errmsg);
+	const DBanswer *answ = this->exec(command, param, errmsg, resultFormat);
 
-	const std::string answer = this->answerstring(answ);
+	const std::string answer = ((resultFormat == FORMAT_TEXT) ? this->answerstring(answ) : this->binaryanswer(answ));
 
 #if defined(_DEBUG)
 	if (this->getVerbose()) {
@@ -142,7 +142,16 @@ const std::string DBconnection::answerstring(const DBanswer *answ)
 		return DBconnection::m_error;
 	}
 
-	return answ->getanswer();
+	return answ->getanswer(FORMAT_TEXT);
+}
+
+const std::string DBconnection::binaryanswer(const DBanswer *answ)
+{
+	if (answ == nullptr) {
+		return DBconnection::m_error;
+	}
+
+	return answ->getanswer(FORMAT_BINARY);
 }
 
 void DBconnection::dumpconninfo(const char * const *keys, const char * const *vals)
