@@ -31,10 +31,12 @@ server_cpp := main.cpp \
 	      dbparam.cpp \
 	      dbrecset.cpp \
 	      dbanswer.cpp \
+	      dbstmt.cpp \
 	      pgconn.cpp \
 	      pgparam.cpp \
 	      pgrecset.cpp \
 	      pganswer.cpp \
+	      pgstmt.cpp \
 # EOL server source files
 
 # test source files
