@@ -66,3 +66,14 @@ Download latest version of cpp-httplib and compare:
 make deps
 ```
 
+For configurations `debug` and `release` use `DEBUG=1` or `DEBUG=0`.
+Otherwise configuration `bin` is used. Targets for easier package building:
+```bash
+make installdebug
+make installrelease
+make builddebug
+make buildrelease
+make configs
+make configsbuild
+make configsall
+```

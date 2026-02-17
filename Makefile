@@ -118,7 +118,7 @@ DEFAULT    := $(exe_file)
 
 .MAIN:	default
 
-.PHONY:	default all build buildall clean cleanall cleanobj cleanbackup cleantest cleantests cleandeps cleanhttplib cleancatch2 install installdebug run rundebug testrun testrundebug tests testsdebug deps httplib catch2 backup
+.PHONY:	default all build buildall clean cleanall cleanobj cleanbackup cleantest cleantests cleandeps cleanhttplib cleancatch2 builddebug buildrelease buildbin installdebug installrelease installbin configs configsbuild configsall install installdebug run rundebug testrun testrundebug tests testsdebug deps httplib catch2 backup
 
 default:	$(BUILDDIR) $(DEFAULT)
 
@@ -127,6 +127,30 @@ all:	deps install backup
 build:	cleanall install tests
 
 buildall:	deps cleanall install tests backup
+
+builddebug:
+	$(MAKE) DEBUG=1 build
+
+buildrelease:
+	$(MAKE) DEBUG=0 build
+
+buildbin:
+	$(MAKE) DEBUG=2 build
+
+installdebug:
+	$(MAKE) DEBUG=1 build
+
+installrelease:
+	$(MAKE) DEBUG=0 build
+
+installbin:
+	$(MAKE) DEBUG=2 build
+
+configs:	installdebug installrelease installbin
+
+configsbuild:	builddebug buildrelease buildbin
+
+configsall:	deps configsbuild backup
 
 install:	default $(all_files)
 
