@@ -1,5 +1,5 @@
 
-#define _START_HTTP_SERVER_MAIN
+//#define _START_HTTP_SERVER_MAIN
 #define _START_PG_CONNECTION_MAIN
 
 #include "main.hpp"
@@ -46,6 +46,18 @@ int main(int argc, char **argv)
 		std::cout << "ANSWER: " << pg.getanswer("SELECT * FROM orders LIMIT 3;") << std::endl;
 
 		std::cout << "ANSWER: " << pg.getanswer("SELECT zahl, klein FROM test2 WHERE \"ID\" = 2;") << std::endl;
+
+		PGparameter parama(1);
+		PGparameter paramb(3);
+
+		parama.set(2, 1);
+		paramb.set("zahl", 1);
+		paramb.set("klein", 2);
+		paramb.set(2, 3);
+
+		std::cout << "ANSWER: " << pg.getanswer("SELECT zahl, klein FROM test2 WHERE \"ID\" = $1;", parama) << std::endl;
+
+		std::cout << "ANSWER: " << pg.getanswer("SELECT $1, $2 FROM test2 WHERE \"ID\" = $3;", paramb) << std::endl;
 #endif
 
 #if defined(_START_HTTP_SERVER_MAIN)

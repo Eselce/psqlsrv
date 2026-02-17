@@ -5,4 +5,5 @@
 
 #include "httpsrv.hpp"
 #include "pgconn.hpp"
+#include "pgparam.hpp"
 
