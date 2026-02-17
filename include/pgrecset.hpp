@@ -10,7 +10,7 @@ class PGrecordset : public DBrecordset
 public:
 	PGrecordset(void);
 
-	virtual ~PGrecordset(void);
+	virtual ~PGrecordset(void) override;
 
 protected:
 };

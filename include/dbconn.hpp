@@ -18,7 +18,7 @@ public:
 
 	DBconnection(const char * const *keys, const char * const *vals, const bool blocking = false, const int expand_dbname = 0);
 
-	virtual ~DBconnection(void);
+	virtual ~DBconnection(void) override;
 
 public:
 	virtual DBconnection *connect(const std::string &connectstr = "", const bool blocking = false);

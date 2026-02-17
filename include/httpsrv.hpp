@@ -21,7 +21,7 @@ public:
 
 	HTTPserver(int port);
 
-	virtual ~HTTPserver(void);
+	virtual ~HTTPserver(void) override;
 
 public:
 	bool start(int port = defaultport);
@@ -39,7 +39,7 @@ protected:
 
 	const std::string testhandler(const httplib::Request &req);
 
-	virtual void disconnect(const bool force = true);
+	virtual void disconnect(const bool force = true) override;
 
 protected:
 	httplib::Server *m_pSrv;
