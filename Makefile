@@ -21,10 +21,27 @@ README     := README.md
 GITIGNORE  := .gitignore
 LAUNCH     := $(VSCODEDIR)/launch.json
 TASKS      := $(VSCODEDIR)/tasks.json
+
+# server source files
 server_exe := server
-server_cpp := main.cpp nicesvc.cpp httpsrv.cpp dbconn.cpp dbparam.cpp dbrecset.cpp dbanswer.cpp pgconn.cpp pgparam.cpp pgrecset.cpp pganswer.cpp
+server_cpp := main.cpp \
+	      nicesvc.cpp \
+	      httpsrv.cpp \
+	      dbconn.cpp \
+	      dbparam.cpp \
+	      dbrecset.cpp \
+	      dbanswer.cpp \
+	      pgconn.cpp \
+	      pgparam.cpp \
+	      pgrecset.cpp \
+	      pganswer.cpp \
+# EOL server source files
+
+# test source files
 test_exe   := tests
-test_cpp   := test_dummy.cpp
+test_cpp   := test_dummy.cpp \
+# EOL test source files
+
 CPPVERSION := c++$(CPPNUMBER)
 CPPSTYLE   := -std=$(CPPVERSION)
 CFLAGSDEB  := $(WFLAGS) $(DEBFLAGS)
