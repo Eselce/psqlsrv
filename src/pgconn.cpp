@@ -1,6 +1,8 @@
 
 #include "pganswer.hpp"
 
+#include "pgrecset.hpp"
+
 #include "pgconn.hpp"
 
 PGconnection::PGconnection(void)
@@ -183,6 +185,32 @@ const DBanswer *PGconnection::exec(const char *command, const DBparameter &param
 	}
 
 	return new PGanswer(res);
+}
+
+DBrecordset *PGconnection::query(const char *command, const char *stmtName)
+{
+	if (! this->check()) {
+		return nullptr;
+	}
+
+	DBrecordset *recset = new PGrecordset(this, command, 0, nullptr);
+
+	recset->setStmtName(stmtName);
+
+	return recset;
+}
+
+DBrecordset *PGconnection::query(const char *command, const DBparameter &param, const char *stmtName)
+{
+	if (! this->check()) {
+		return nullptr;
+	}
+
+	DBrecordset *recset = new PGrecordset(this, command, param.count(), param.types());
+
+	recset->setStmtName(stmtName);
+	
+	return recset;
 }
 
 void PGconnection::dumpoptions(void) const

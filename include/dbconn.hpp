@@ -5,7 +5,11 @@
 
 #include "dbanswer.hpp"
 
+#include "dbrecset.hpp"
+
 #include "nicesvc.hpp"
+
+static const char *cmdErrorMsg = "Command failed";
 
 class DBconnection : public NiceService
 {
@@ -35,13 +39,17 @@ public:
 
 	virtual const std::string status(void) const = 0;
 
-	virtual const DBanswer *exec(const char *command, const char *errmsg = "Command failed", const DBparameterFormat resultFormat = FORMAT_TEXT) = 0;
+	virtual const DBanswer *exec(const char *command, const char *errmsg = cmdErrorMsg, const DBparameterFormat resultFormat = FORMAT_TEXT) = 0;
 
-	virtual const DBanswer *exec(const char *command, const DBparameter &param, const char *errmsg = "Command failed", const DBparameterFormat resultFormat = FORMAT_TEXT) = 0;
+	virtual const DBanswer *exec(const char *command, const DBparameter &param, const char *errmsg = cmdErrorMsg, const DBparameterFormat resultFormat = FORMAT_TEXT) = 0;
 
-	virtual const std::string getanswer(const char *command, const char *errmsg = "Command failed", const DBparameterFormat resultFormat = FORMAT_TEXT);
+	virtual const std::string getanswer(const char *command, const char *errmsg = cmdErrorMsg, const DBparameterFormat resultFormat = FORMAT_TEXT);
 
-	virtual const std::string getanswer(const char *command, const DBparameter &param, const char *errmsg = "Command failed", const DBparameterFormat resultFormat = FORMAT_TEXT);
+	virtual const std::string getanswer(const char *command, const DBparameter &param, const char *errmsg = cmdErrorMsg, const DBparameterFormat resultFormat = FORMAT_TEXT);
+
+	virtual DBrecordset *query(const char *command, const char *stmtName = nullptr) = 0;
+
+	virtual DBrecordset *query(const char *command, const DBparameter &param, const char *stmtName = nullptr) = 0;
 
 	virtual void dumpoptions(void) const = 0;
 

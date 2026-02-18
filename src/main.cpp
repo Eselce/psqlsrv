@@ -58,6 +58,39 @@ int main(int argc, char **argv)
 		std::cout << "ANSWER: " << pg.getanswer("SELECT zahl, klein FROM test2 WHERE \"ID\" = $1;", parama) << std::endl;
 
 		std::cout << "ANSWER: " << pg.getanswer("SELECT $1, $2 FROM test2 WHERE \"ID\" = $3;", paramb) << std::endl;
+
+		DBrecordset *recset = pg.query("SELECT * FROM test2;");
+
+		if (recset != nullptr) {
+			std::cout << "RECORDSET CREATED" << std::endl;
+
+			delete recset;
+		} else {
+			std::cerr << "FAILED TO CREATE RECORDSET" << std::endl;
+		}
+
+		recset = pg.query("SELECT * FROM test2;", "test17");
+
+		if (recset != nullptr) {
+			std::cout << "RECORDSET CREATED" << std::endl;
+
+			delete recset;
+		} else {
+			std::cerr << "FAILED TO CREATE RECORDSET" << std::endl;
+		}
+
+		PGparameter paramc(1);
+		paramc.set(50, 1);
+
+		recset = pg.query("SELECT * FROM test2 WHERE zahl > $1;", paramc, "test21");
+
+		if (recset != nullptr) {
+			std::cout << "RECORDSET CREATED" << std::endl;
+
+			delete recset;
+		} else {
+			std::cerr << "FAILED TO CREATE RECORDSET" << std::endl;
+		}
 #endif
 
 #if defined(_START_HTTP_SERVER_MAIN)

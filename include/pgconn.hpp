@@ -7,8 +7,6 @@
 
 #include "dbconn.hpp"
 
-static const char *cmdErrorMsg = "Command failed";
-
 class PGconnection : public DBconnection
 {
 public:
@@ -34,6 +32,10 @@ public:
 	virtual const DBanswer *exec(const char *command, const char *errmsg = cmdErrorMsg, const DBparameterFormat resultFormat = FORMAT_TEXT) override;
 
 	virtual const DBanswer *exec(const char *command, const DBparameter &param, const char *errmsg = cmdErrorMsg, const DBparameterFormat resultFormat = FORMAT_TEXT) override;
+
+	virtual DBrecordset *query(const char *command, const char *stmtName = nullptr) override;
+
+	virtual DBrecordset *query(const char *command, const DBparameter &param, const char *stmtName = nullptr) override;
 
 	virtual void dumpoptions(void) const override;
 
