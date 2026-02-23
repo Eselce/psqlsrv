@@ -7,7 +7,7 @@
 
 #include "httplib.h"
 
-#include "dbconn.hpp"
+#include "db_type.h"
 
 #include "nicesvc.hpp"
 
@@ -35,9 +35,9 @@ public:
 protected:
 	int addStaticGet(const std::string &cmd, const std::string &out, const std::string &mimetype = textplain);
 
-	int addGet(const std::string &pattern, const std::string (HTTPserver::*handler)(const httplib::Request &), const std::string &mimetype = textplain);
+	int addGet(const std::string &pattern, std::string (HTTPserver::*handler)(const httplib::Request &), const std::string &mimetype = textplain);
 
-	const std::string testhandler(const httplib::Request &req);
+	std::string testhandler(const httplib::Request &req);
 
 	virtual void disconnect(const bool force = true) override;
 

@@ -1,6 +1,8 @@
 
 #include <iostream>
 
+#include "dbconn.hpp"
+
 #include "httpsrv.hpp"
 
 static const std::string defaultip4 = "0.0.0.0";
@@ -63,6 +65,13 @@ void HTTPserver::stop(void)
 		m_rulescount = 0;
 
 		delete pSrv;
+
+#if defined(_DEBUG)
+		if (this->getVerbose()) {
+			std::clog << "Deleted server: " << this << std::endl;
+		}
+#endif
+		std::cerr << "Server stopped." << std::endl;
 	}
 }
 
@@ -106,7 +115,7 @@ int HTTPserver::addStaticGet(const std::string &pattern, const std::string &out,
 	return this->m_rulescount;
 }
 
-int HTTPserver::addGet(const std::string &pattern, const std::string (HTTPserver::*handler)(const httplib::Request &), const std::string &mimetype)
+int HTTPserver::addGet(const std::string &pattern, std::string (HTTPserver::*handler)(const httplib::Request &), const std::string &mimetype)
 {
 	const char *pattern_str = pattern.c_str();
 	const char *mimetype_str = strdup(mimetype.c_str());
@@ -122,7 +131,7 @@ int HTTPserver::addGet(const std::string &pattern, const std::string (HTTPserver
 	return this->m_rulescount;
 }
 
-const std::string HTTPserver::testhandler(const httplib::Request &req)
+std::string HTTPserver::testhandler(const httplib::Request &req)
 {
 	// req.method			- GET
 	// req.version			- HTTP/1.1
