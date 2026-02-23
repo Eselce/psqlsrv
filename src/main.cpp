@@ -2,6 +2,8 @@
 //#define _START_HTTP_SERVER_MAIN
 #define _START_PG_CONNECTION_MAIN
 
+#include <iostream>
+
 #include "main.hpp"
 
 int main(int argc, char **argv)
@@ -24,7 +26,7 @@ int main(int argc, char **argv)
 		conninfo = "";
 	}
 
-	pg.connect(conninfo, true);
+	pg.connect(conninfo, true, PQERRORS_VERBOSE);
 
 	if (pg.checkconnect()) {
 		std::cout << "CONNECTED" << std::endl;
@@ -50,10 +52,10 @@ int main(int argc, char **argv)
 		PGparameter parama(1);
 		PGparameter paramb(3);
 
-		parama.set(2, 1);
-		paramb.set("zahl", 1);
-		paramb.set("klein", 2);
-		paramb.set(2, 3);
+		parama.bind(2, 1);
+		paramb.bind("zahl", 1);
+		paramb.bind("klein", 2);
+		paramb.bind(2, 3);
 
 		std::cout << "ANSWER: " << pg.getanswer("SELECT zahl, klein FROM test2 WHERE \"ID\" = $1;", parama) << std::endl;
 
@@ -64,7 +66,15 @@ int main(int argc, char **argv)
 		if (recset != nullptr) {
 			std::cout << "RECORDSET CREATED" << std::endl;
 
+			std::cout << "ANSWER: " << recset->getanswer() << std::endl;
+
 			delete recset;
+
+#if defined(_DEBUG)
+			if (pg.getVerbose()) {
+				std::clog << "Deleted recordset: " << recset << std::endl;
+			}
+#endif
 		} else {
 			std::cerr << "FAILED TO CREATE RECORDSET" << std::endl;
 		}
@@ -74,20 +84,37 @@ int main(int argc, char **argv)
 		if (recset != nullptr) {
 			std::cout << "RECORDSET CREATED" << std::endl;
 
+			std::cout << "ANSWER: " << recset->getanswer() << std::endl;
+
 			delete recset;
+
+#if defined(_DEBUG)
+			if (pg.getVerbose()) {
+				std::clog << "Deleted recordset: " << recset << std::endl;
+			}
+#endif
 		} else {
 			std::cerr << "FAILED TO CREATE RECORDSET" << std::endl;
 		}
 
 		PGparameter paramc(1);
-		paramc.set(50, 1);
 
-		recset = pg.query("SELECT * FROM test2 WHERE zahl > $1;", paramc, "test21");
+		paramc.bind(50, 1);
+
+		recset = pg.query("SELECT * FROM test2 WHERE zahl > $1;", paramc);
 
 		if (recset != nullptr) {
 			std::cout << "RECORDSET CREATED" << std::endl;
 
+			std::cout << "ANSWER: " << recset->getanswer(paramc) << std::endl;
+
 			delete recset;
+
+#if defined(_DEBUG)
+			if (pg.getVerbose()) {
+				std::clog << "Deleted recordset: " << recset << std::endl;
+			}
+#endif
 		} else {
 			std::cerr << "FAILED TO CREATE RECORDSET" << std::endl;
 		}
