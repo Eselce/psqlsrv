@@ -1,0 +1,160 @@
+
+#include "pg_type.h"
+
+#include "pgparam.hpp"
+
+#include "pgstmt.hpp"
+
+#include "pganswer.hpp"
+
+#include "test_poc.hpp"
+
+test_poc::test_poc(void)
+{
+}
+
+test_poc::~test_poc(void)
+{
+}
+
+bool test_poc::classrun(PGconnection &pg, const char *command, const int arg) const {
+    const char *stmtname = "mystat";
+    const int nParams = 1;
+    PGparameter param(nParams);
+
+    param.bind(arg, nParams);
+
+    DBrecordset *recset = pg.query(command, param, stmtname);
+
+    std::cout << "ANSWER: " << recset->getanswer(param, cmdErrorMsg, FORMAT_TEXT) << std::endl << std::endl;
+
+    delete recset;
+
+    this->freestmt(pg, stmtname);
+
+    return true;
+}
+
+bool test_poc::autorun(PGconnection &pg, const char *command, const int arg) const {
+    const char *stmtname = "mystat";
+    const Oid paramTypes[] = { INT4OID };
+    const int nParams = (sizeof(paramTypes) / sizeof(Oid));
+    PGstatement stmt(command, nParams, paramTypes);
+    PGparameter param(nParams);
+
+    param.bind(arg, nParams);
+
+    stmt.setName(stmtname);
+
+    stmt.prepare(&pg);
+
+    const DBanswer *answ = stmt.exec(&pg, param, cmdErrorMsg, FORMAT_TEXT);
+
+    std::cout << "ANSWER: " << answ->getanswer(FORMAT_TEXT) << std::endl << std::endl;
+
+    this->freestmt(pg, stmtname);
+
+    return true;
+}
+
+bool test_poc::manualrun(PGconnection &pg, const char *command, const int arg) const {
+    const char *stmtname = "mystat";
+    const Oid paramTypes[] = { INT4OID };
+    const int nParams = (sizeof(paramTypes) / sizeof(Oid));
+    const int paramData[] = { arg };
+    const int *paramPointers[] = { paramData };
+    char **paramValues = reinterpret_cast<char **>(const_cast<int **>(paramPointers));
+    const int paramLengths[] = { sizeof(arg) };
+    const int paramFormats[] = { FORMAT_BINARY };
+
+    PGresult *res = PQprepare(pg.getPGconn(), stmtname, command, nParams, paramTypes);
+    ExecStatusType status = PQresultStatus(res);
+
+    std::clog << "Prepared statement (status): " << status
+#if defined(_DEBUG)
+                << " [" << ExecStatusTypeName[status] << "]"
+#endif
+                << std::endl;
+
+    if ((status != PGRES_TUPLES_OK) && (status != PGRES_COMMAND_OK)) {
+        std::cerr << cmdErrorMsg << ": " << PQerrorMessage(pg.getPGconn());
+
+        std::clog << "PQprepare returned error status: " << status
+#if defined(_DEBUG)
+                << " [" << ExecStatusTypeName[status] << "]"
+#endif
+                << std::endl;
+    }
+
+    PQclear(res);
+
+    std::clog << "Cleared result: " << pg.getPGconn() << std::endl;
+
+    PGresult *exeres = PQexecPrepared(pg.getPGconn(), stmtname, nParams, paramValues, paramLengths, paramFormats, FORMAT_TEXT);
+    status = PQresultStatus(exeres);
+
+    std::clog << "Execute statement (status): " << status
+#if defined(_DEBUG)
+                << " [" << ExecStatusTypeName[status] << "]"
+#endif
+                << std::endl;
+
+    if ((status != PGRES_TUPLES_OK) && (status != PGRES_COMMAND_OK)) {
+        std::cerr << cmdErrorMsg << ": " << PQerrorMessage(pg.getPGconn());
+
+        PQclear(exeres);
+
+        std::clog << "PQexecPrepared returned error status: " << status
+#if defined(_DEBUG)
+                << " [" << ExecStatusTypeName[status] << "]"
+#endif
+                << std::endl;
+        std::clog << "Cleared result: " << pg.getPGconn() << std::endl;
+
+        return false;
+    }
+
+    const PGanswer answ(exeres);
+
+    std::cout << "ANSWER: " << answ.getanswer(FORMAT_TEXT) << std::endl << std::endl;
+
+    this->freestmt(pg, stmtname);
+
+    return true;
+}
+
+void test_poc::freestmt(PGconnection &pg, const char *stmtname) const {
+    // Freeing statement quick and dirty, there may be no API function for it...
+    std::string deallocate = "DEALLOCATE PREPARE ";
+
+    deallocate += stmtname;
+
+    pg.getanswer(deallocate.c_str()); 
+}
+
+bool test_poc::run(void)
+{
+    const char    *command = "SELECT * FROM test2 WHERE zahl > $1;";
+    const int      arg = 50;
+    const char    *conninfo = "";
+    PGconnection   pg;
+    bool           ret = false;
+
+    pg.connect(conninfo, true, PQERRORS_VERBOSE);
+
+   	if (pg.checkconnect()) {
+        PQsetErrorVerbosity(pg.getPGconn(), PQERRORS_VERBOSE);
+
+		std::cout << "ANSWER: " << pg.getanswer("SELECT version();") << std::endl;
+		std::cout << "ANSWER: " << pg.getanswer("SET search_path TO loges;") << std::endl;
+
+        ret = manualrun(pg, command, arg);
+
+        ret = autorun(pg, command, arg);
+
+        ret = classrun(pg, command, arg);
+    }
+
+    return ret;
+}
+
