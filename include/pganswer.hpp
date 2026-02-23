@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include "postgresql/libpq-fe.h"
+#include "pg_type.h"
 
 #include "dbanswer.hpp"
 
@@ -13,7 +13,12 @@ public:
 	virtual ~PGanswer(void) override;
 
 public:
-	virtual const std::string getanswer(const DBparameterFormat resultFormat = FORMAT_TEXT) const override;
+	virtual std::string getanswer(const DBparameterFormat resultFormat = FORMAT_TEXT) const override;
+
+protected:
+	virtual std::string gettexttable(void) const override;
+
+	virtual std::string getbinarytable(void) const override;
 
 protected:
 	PGresult *m_pRes;

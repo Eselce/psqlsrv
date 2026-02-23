@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include "postgresql/libpq-fe.h"
+#include "pg_type.h"
 
 #include "dbparam.hpp"
 
@@ -13,24 +13,24 @@ public:
 	virtual ~PGparameter(void) override;
 
 public:
-	virtual void set(const int &value, const int pos) override;
+	virtual void bind(const int &value, const int pos) override;
 
-	virtual void set(const short int &value, const int pos) override;
+	virtual void bind(const short int &value, const int pos) override;
 
-	virtual void set(const long int &value, const int pos) override;
+	virtual void bind(const long int &value, const int pos) override;
 
-	virtual void set(const float &value, const int pos) override;
+	virtual void bind(const float &value, const int pos) override;
 
-	virtual void set(const double &value, const int pos) override;
+	virtual void bind(const double &value, const int pos) override;
 
-	virtual void set(const std::string &value, const int pos) override;
+	virtual void bind(const std::string &value, const int pos) override;
 
-	virtual void set(const char *value, const int pos) override;
+	virtual void bind(const char *value, const int pos) override;
 
 	virtual const Oid *types(void) const override;
 
 protected:
-	virtual void setany(const void *value, const int pos, const Oid type, const int length = 0, const DBparameterFormat format = FORMAT_BINARY) override;
+	virtual void bindany(const void *value, const int pos, const Oid type, const int length = 0, const DBparameterFormat format = FORMAT_BINARY) override;
 
 protected:
 };

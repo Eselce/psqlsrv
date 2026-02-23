@@ -5,6 +5,8 @@
 
 #include "dbparam.hpp"
 
+#include "dbanswer.hpp"
+
 class DBstatement
 {
 public:
@@ -14,15 +16,36 @@ public:
 
 	virtual void setName(const char *name);
 
-	virtual const std::string getautoname(void) const;
+	virtual std::string getautoname(void) const;
 
 	const char *getName(void) const;
 
 	const char *getCommand(void) const;
 
-	const int getNParams(void) const;
+	int getNParams(void) const;
 
 	const DBparameterType *getParamTypes(void) const;
+
+	virtual void resize(int nFields);
+
+	virtual void setNFields(int nFields);
+
+	int getNFields(void) const;
+
+	virtual const DBparameterType *getFieldTypes(void) const;
+
+	virtual std::string getFieldName(const int field) const;
+
+	virtual int getFieldNumber(const std::string fieldName) const;
+
+	virtual void prepare(DBconnection *conn);
+
+	virtual const DBanswer *exec(DBconnection *conn, const char *errmsg, const DBparameterFormat resultFormat);
+
+	virtual const DBanswer *exec(DBconnection *conn, const DBparameter &param, const char *errmsg, const DBparameterFormat resultFormat);
+
+protected:
+	virtual void calcFieldInfos(DBconnection *conn);
 
 protected:
 	std::string m_name;
@@ -32,5 +55,11 @@ protected:
 	const int m_nParams;
 
 	const DBparameterType *m_paramTypes;
+
+	int m_nFields;
+
+	DBparameterType *m_fieldTypes;
+
+	std::string *m_fieldNames;
 };
 

@@ -1,52 +1,60 @@
 
 #include <iostream>
 
-#include "postgresql/pg_config.h"
-
 #include "dbconn.hpp"
+
+static const bool verbose = ! false;
+
+const char *cmdErrorMsg = "Command failed";
 
 const char *DBconnection::m_error = "ERROR";
 
 DBconnection::DBconnection(void)
-:	NiceService(false, false, false, false)
+:	NiceService(false, false, false, verbose)
 {
 }
 
-DBconnection::DBconnection(const std::string &connectstr, const bool blocking)
-:	NiceService(false, false, blocking, false)
+DBconnection::DBconnection(const std::string &connectstr, const bool blocking, const int verboselevel)
+:	NiceService(false, false, blocking, verbose)
 {
-	this->connect(connectstr, this->getBlocking());
+	this->connect(connectstr, this->getBlocking(), verboselevel);
 }
 
-DBconnection::DBconnection(const char *conninfo, const bool blocking)
-:	NiceService(false, false, blocking, false)
+DBconnection::DBconnection(const char *conninfo, const bool blocking, const int verboselevel)
+:	NiceService(false, false, blocking, verbose)
 {
-	this->connect(conninfo, this->getBlocking());
+	this->connect(conninfo, this->getBlocking(), verboselevel);
 }
 
 // const int expand_dbname = 0;  // every entry is separate (0) or dbname contains parameters (1)
-DBconnection::DBconnection(const char * const *keys, const char * const *vals, const bool blocking, const int expand_dbname)
-:	NiceService(false, blocking, false)
+DBconnection::DBconnection(const char **keys, const char **vals, const bool blocking, const int verboselevel, const int expand_dbname)
+:	NiceService(false, blocking, verbose)
 {
-	this->connect(keys, vals, this->getBlocking(), expand_dbname);
+	this->connect(keys, vals, this->getBlocking(), verboselevel, expand_dbname);
 }
 
 DBconnection::~DBconnection(void)
 {
 }
 
-DBconnection *DBconnection::connect(const std::string &connectstr, const bool blocking)
+DBconnection *DBconnection::connect(const std::string &connectstr, const bool blocking, const int verboselevel)
 {
 	const char *conninfo = connectstr.c_str();
 
-	return this->connect(conninfo, blocking);
+	DBconnection *conn = this->connect(conninfo, blocking);
+
+	if (conn != nullptr) {
+		this->setverbose(verboselevel);
+	}
+
+	return conn;
 }
 
-DBconnection *DBconnection::connect(const char *conninfo, const bool blocking)
+DBconnection *DBconnection::connect(const char *conninfo, const bool blocking, const int verboselevel)
 {
 	static const char *host = "localhost";
 	static const char *hostaddr = "127.0.0.1";
-	static const char *port = DEF_PGPORT_STR; // "5432"
+	static const char *port = "5432" /*DEF_PGPORT_STR*/; // "5432"
 	static const char *dbname = "loges";
 	static const char *user = "loges";
 	static const char *password = "";
@@ -72,11 +80,15 @@ DBconnection *DBconnection::connect(const char *conninfo, const bool blocking)
 		connected = this->connectdb(conninfo, blocking);
 	}
 
+	if (connected) {
+		this->setverbose(verboselevel);
+	}
+
 	return (connected ? this : nullptr);
 }
 
 // const int expand_dbname = 0;  // every entry is separate (0) or dbname contains parameters (1)
-DBconnection *DBconnection::connect(const char * const *keys, const char * const *vals, const bool blocking, const int expand_dbname)
+DBconnection *DBconnection::connect(const char **keys, const char **vals, const bool blocking, const int verboselevel, const int expand_dbname)
 {
 	this->disconnect();
 
@@ -86,57 +98,88 @@ DBconnection *DBconnection::connect(const char * const *keys, const char * const
 
 	this->dumpoptions();
 
+	if (connected) {
+		this->setverbose(verboselevel);
+	}
+
 	return (connected ? this : nullptr);
 }
 
-DBconnection *DBconnection::connect(const char *host, const char *port, const char *options, const char *dbName, const char *login, const char *pwd)
+DBconnection *DBconnection::connect(const char *host, const char *port, const char *options, const char *dbName, const char *login, const char *pwd, const int verboselevel)
 {
 	this->disconnect();
 
 	bool connected = this->connectdb(host, port, options, dbName, login, pwd);
 
+	if (connected) {
+		this->setverbose(verboselevel);
+	}
+
 	return (connected ? this : nullptr);
 }
 
-const std::string DBconnection::getanswer(const char *command, const char *errmsg, const DBparameterFormat resultFormat)
+std::string DBconnection::getanswer(const char *command, const char *errmsg, const DBparameterFormat resultFormat)
 {
 	const DBanswer *answ = this->exec(command, errmsg, resultFormat);
 
-	const std::string answer = ((resultFormat == FORMAT_TEXT) ? this->answerstring(answ) : this->binaryanswer(answ));
-
-#if defined(_DEBUG)
-	if (this->getVerbose()) {
-		std::clog << "[" << this << "] " << command << " -> " << answer << std::endl;
-	}
-#endif
-
-	if (answ != nullptr) {
-		delete answ;
-	}
+	const std::string answer = this->getanswer(answ, resultFormat);
 
 	return answer;
 }
 
-const std::string DBconnection::getanswer(const char *command, const DBparameter &param, const char *errmsg, const DBparameterFormat resultFormat)
+std::string DBconnection::getanswer(const char *command, const DBparameter &param, const char *errmsg, const DBparameterFormat resultFormat)
 {
 	const DBanswer *answ = this->exec(command, param, errmsg, resultFormat);
 
-	const std::string answer = ((resultFormat == FORMAT_TEXT) ? this->answerstring(answ) : this->binaryanswer(answ));
+	const std::string answer = this->getanswer(answ, resultFormat);
+
+	return answer;
+}
+
+std::string DBconnection::getanswer(const DBstatement *stmt, const char *errmsg, const DBparameterFormat resultFormat)
+{
+	const DBanswer *answ = this->exec(stmt, errmsg, resultFormat);
+
+	const std::string answer = this->getanswer(answ, resultFormat);
+
+	return answer;
+}
+
+std::string DBconnection::getanswer(const DBstatement *stmt, const DBparameter &param, const char *errmsg, const DBparameterFormat resultFormat)
+{
+	const DBanswer *answ = this->exec(stmt, param, errmsg, resultFormat);
+
+	const std::string answer = this->getanswer(answ, resultFormat);
+
+	return answer;
+}
+
+std::string DBconnection::getanswer(const DBanswer *answ, const DBparameterFormat resultFormat)
+{
+	const std::string answer = ((resultFormat == FORMAT_TEXT)
+									? DBconnection::answerstring(answ)
+									: DBconnection::binaryanswer(answ));
 
 #if defined(_DEBUG)
 	if (this->getVerbose()) {
-		std::clog << "[" << this << "] " << command << " -> " << answer << std::endl;
+		std::clog << "[" << this << "] " << " -> " << answer << std::endl;
 	}
 #endif
 
 	if (answ != nullptr) {
 		delete answ;
+
+#if defined(_DEBUG)
+		if (this->getVerbose()) {
+			std::clog << "Deleted answer: " << this << std::endl;
+		}
+#endif
 	}
 
 	return answer;
 }
 
-const std::string DBconnection::answerstring(const DBanswer *answ)
+std::string DBconnection::answerstring(const DBanswer *answ)
 {
 	if (answ == nullptr) {
 		return DBconnection::m_error;
@@ -145,7 +188,7 @@ const std::string DBconnection::answerstring(const DBanswer *answ)
 	return answ->getanswer(FORMAT_TEXT);
 }
 
-const std::string DBconnection::binaryanswer(const DBanswer *answ)
+std::string DBconnection::binaryanswer(const DBanswer *answ)
 {
 	if (answ == nullptr) {
 		return DBconnection::m_error;
@@ -154,7 +197,7 @@ const std::string DBconnection::binaryanswer(const DBanswer *answ)
 	return answ->getanswer(FORMAT_BINARY);
 }
 
-void DBconnection::dumpconninfo(const char * const *keys, const char * const *vals)
+void DBconnection::dumpconninfo(const char **keys, const char **vals)
 {
 	for (int index = 0; (keys[index] != nullptr) && *keys[index]; ++index) {
 		std::cout << keys[index] << " = " << vals[index] << std::endl;

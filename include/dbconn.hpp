@@ -9,43 +9,53 @@
 
 #include "nicesvc.hpp"
 
-static const char *cmdErrorMsg = "Command failed";
-
 class DBconnection : public NiceService
 {
 public:
 	DBconnection(void);
 
-	DBconnection(const std::string &connectstr, const bool blocking = false);
+	DBconnection(const std::string &connectstr, const bool blocking = false, const int verboselevel = 0);
 
-	DBconnection(const char *conninfo, const bool blocking = false);
+	DBconnection(const char *conninfo, const bool blocking = false, const int verboselevel = 0);
 
-	DBconnection(const char * const *keys, const char * const *vals, const bool blocking = false, const int expand_dbname = 0);
+	DBconnection(const char **keys, const char **vals, const bool blocking = false, const int verboselevel = 0, const int expand_dbname = 0);
 
 	virtual ~DBconnection(void) override;
 
 public:
-	virtual DBconnection *connect(const std::string &connectstr = "", const bool blocking = false);
+	virtual void setverbose(const int verboselevel) = 0;
 
-	virtual DBconnection *connect(const char *conninfo, const bool blocking = false);
+	virtual DBconnection *connect(const std::string &connectstr = "", const bool blocking = false, const int verboselevel = 0);
 
-	virtual DBconnection *connect(const char * const *keys, const char * const *vals, const bool blocking = false, const int expand_dbname = 0);
+	virtual DBconnection *connect(const char *conninfo, const bool blocking = false, const int verboselevel = 0);
 
-	virtual DBconnection *connect(const char *host, const char *port, const char *options, const char *dbName, const char *login = nullptr, const char *pwd = nullptr);
+	virtual DBconnection *connect(const char **keys, const char **vals, const bool blocking = false, const int verboselevel = 0, const int expand_dbname = 0);
+
+	virtual DBconnection *connect(const char *host, const char *port, const char *options, const char *dbName, const char *login = nullptr, const char *pwd = nullptr, const int verboselevel = 0);
 
 	virtual bool checkconnect(void) = 0;
 
 	virtual bool check(void) = 0;
 
-	virtual const std::string status(void) const = 0;
+	virtual std::string status(void) const = 0;
 
 	virtual const DBanswer *exec(const char *command, const char *errmsg = cmdErrorMsg, const DBparameterFormat resultFormat = FORMAT_TEXT) = 0;
 
 	virtual const DBanswer *exec(const char *command, const DBparameter &param, const char *errmsg = cmdErrorMsg, const DBparameterFormat resultFormat = FORMAT_TEXT) = 0;
 
-	virtual const std::string getanswer(const char *command, const char *errmsg = cmdErrorMsg, const DBparameterFormat resultFormat = FORMAT_TEXT);
+	virtual const DBanswer *exec(const DBstatement *stmt, const char *errmsg = cmdErrorMsg, const DBparameterFormat resultFormat = FORMAT_TEXT) = 0;
 
-	virtual const std::string getanswer(const char *command, const DBparameter &param, const char *errmsg = cmdErrorMsg, const DBparameterFormat resultFormat = FORMAT_TEXT);
+	virtual const DBanswer *exec(const DBstatement *stmt, const DBparameter &param, const char *errmsg = cmdErrorMsg, const DBparameterFormat resultFormat = FORMAT_TEXT) = 0;
+
+	virtual std::string getanswer(const char *command, const char *errmsg = cmdErrorMsg, const DBparameterFormat resultFormat = FORMAT_TEXT);
+
+	virtual std::string getanswer(const char *command, const DBparameter &param, const char *errmsg = cmdErrorMsg, const DBparameterFormat resultFormat = FORMAT_TEXT);
+
+	virtual std::string getanswer(const DBstatement *stmt, const char *errmsg = cmdErrorMsg, const DBparameterFormat resultFormat = FORMAT_TEXT);
+
+	virtual std::string getanswer(const DBstatement *stmt, const DBparameter &param, const char *errmsg = cmdErrorMsg, const DBparameterFormat resultFormat = FORMAT_TEXT);
+
+	virtual std::string getanswer(const DBanswer *answ, const DBparameterFormat resultFormat = FORMAT_TEXT);
 
 	virtual DBrecordset *query(const char *command, const char *stmtName = nullptr) = 0;
 
@@ -56,17 +66,17 @@ public:
 protected:
 	virtual bool connectdb(const char *conninfo, const bool blocking = false) = 0;
 
-	virtual bool connectdb(const char * const *keys, const char * const *vals, const bool blocking = false, const int expand_dbname = 0) = 0;
+	virtual bool connectdb(const char **keys, const char **vals, const bool blocking = false, const int expand_dbname = 0) = 0;
 
 	virtual bool connectdb(const char *host, const char *port, const char *options, const char *dbName, const char *login = nullptr, const char *pwd = nullptr) = 0;
 
-	static const std::string answerstring(const DBanswer *answ);
+	static std::string answerstring(const DBanswer *answ);
 
-	static const std::string binaryanswer(const DBanswer *answ);
+	static std::string binaryanswer(const DBanswer *answ);
 
-	static void dumpconninfo(const char * const *keys, const char * const *vals);
+	static void dumpconninfo(const char **keys, const char **vals);
 
-public:
-	static const char *m_error;
+protected:
+	static const char *m_error;  // = "ERROR";
 };
 
