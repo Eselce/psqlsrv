@@ -59,7 +59,7 @@ bool NiceService::getVerbose(void) const
 	return this->m_verbose;
 }
 
-void NiceService::disconnect(const bool /*force*/)
+void NiceService::disconnect([[maybe_unused]] const bool force)
 {
 }
 
