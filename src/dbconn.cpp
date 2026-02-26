@@ -7,6 +7,8 @@ static const bool verbose = ! false;
 
 const char *cmdErrorMsg = "Command failed";
 
+const char *cmdLogMsg = "Execute command (status)";
+
 const char *DBconnection::m_error = "ERROR";
 
 DBconnection::DBconnection(void)

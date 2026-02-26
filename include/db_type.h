@@ -15,3 +15,5 @@ class DBconnection;  // forward declaration to avoid circular dependency
 
 extern const char *cmdErrorMsg;  // = "Command failed";
 
+extern const char *cmdLogMsg;  // = "Execute command (status)";
+

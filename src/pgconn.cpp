@@ -105,6 +105,11 @@ bool PGconnection::connectdb(const char *host, const char *port, const char *opt
 	return (conn != nullptr);
 }
 
+PGconn *PGconnection::getPGconn(void) const
+{
+	return this->m_pConn;
+}
+
 bool PGconnection::checkconnect(void)
 {
 	std::cout << this->statusconnect() << std::endl;
@@ -195,33 +200,8 @@ const DBanswer *PGconnection::exec(const char *command, const char *errmsg, [[ma
 #endif
 
 	PGresult *res = PQexec(this->m_pConn, command);
-	ExecStatusType status = PQresultStatus(res);
 
-#if defined(_DEBUG)
-    if (this->getVerbose()) {
-        std::clog << "Execute command (status): " << status << " [" << ExecStatusTypeName[status] << "]" << std::endl;
-    }
-#endif
-
-	if ((status != PGRES_TUPLES_OK) && (status != PGRES_COMMAND_OK)) {
-        this->printerror(errmsg);
-
-		PQclear(res);
-
-#if defined(_DEBUG)
-		if (this->getVerbose()) {
-			std::clog << "PQexec returned error status: " << status 
-						<< " [" << ExecStatusTypeName[status] << "]" << std::endl;
-			std::clog << "Cleared result: " << this << std::endl;
-		}
-#endif
-
-		this->exit_nicely();
-
-		return nullptr;
-	}
-
-	return new PGanswer(res);
+	return this->checkresult(res, "PQexec", "Execute command (status)", errmsg);
 }
 
 const DBanswer *PGconnection::exec(const char *command, const DBparameter &param, const char *errmsg, const DBparameterFormat resultFormat)
@@ -237,33 +217,8 @@ const DBanswer *PGconnection::exec(const char *command, const DBparameter &param
 #endif
 
 	PGresult *res = PQexecParams(this->m_pConn, command, param.count(), param.types(), param.values(), param.lengths(), param.formats(), resultFormat);
-	ExecStatusType status = PQresultStatus(res);
 
-#if defined(_DEBUG)
-    if (this->getVerbose()) {
-        std::clog << "Execute command (status): " << status << " [" << ExecStatusTypeName[status] << "]" << std::endl;
-    }
-#endif
-
-	if ((status != PGRES_TUPLES_OK) && (status != PGRES_COMMAND_OK)) {
-        this->printerror(errmsg);
-
-		PQclear(res);
-
-#if defined(_DEBUG)
-		if (this->getVerbose()) {
-			std::clog << "PQexecParams returned error status: " << status
-						<< " [" << ExecStatusTypeName[status] << "]" << std::endl;
-			std::clog << "Cleared result: " << this << std::endl;
-		}
-#endif
-
-		this->exit_nicely();
-
-		return nullptr;
-	}
-
-	return new PGanswer(res);
+	return this->checkresult(res, "PQexecParams", "Execute command (status)", errmsg);
 }
 
 const DBanswer *PGconnection::exec(const DBstatement *stmt, const char *errmsg, [[maybe_unused]] const DBparameterFormat resultFormat)
@@ -281,33 +236,8 @@ const DBanswer *PGconnection::exec(const DBstatement *stmt, const char *errmsg, 
 #endif
 
 	PGresult *res = PQexec(this->m_pConn, stmt->getCommand());
-	ExecStatusType status = PQresultStatus(res);
 
-#if defined(_DEBUG)
-    if (this->getVerbose()) {
-        std::clog << "Execute statement (status): " << status << " [" << ExecStatusTypeName[status] << "]" << std::endl;
-    }
-#endif
-
-	if ((status != PGRES_TUPLES_OK) && (status != PGRES_COMMAND_OK)) {
-        this->printerror(errmsg);
-
-		PQclear(res);
-
-#if defined(_DEBUG)
-		if (this->getVerbose()) {
-			std::clog << "PQexec returned error status: " << status
-						<< " [" << ExecStatusTypeName[status] << "]" << std::endl;
-			std::clog << "Cleared result: " << this << std::endl;
-		}
-#endif
-
-		this->exit_nicely();
-
-		return nullptr;
-	}
-
-	return new PGanswer(res);
+	return this->checkresult(res, "PQexec", "Execute statement (status)", errmsg);
 }
 
 const DBanswer *PGconnection::exec(const DBstatement *stmt, const DBparameter &param, const char *errmsg, const DBparameterFormat resultFormat)
@@ -325,31 +255,8 @@ const DBanswer *PGconnection::exec(const DBstatement *stmt, const DBparameter &p
 #endif
 
 	PGresult *res = PQexecPrepared(this->m_pConn, stmt->getName(), param.count(), param.values(), param.lengths(), param.formats(), resultFormat);
-	ExecStatusType status = PQresultStatus(res);
 
-#if defined(_DEBUG)
-    if (this->getVerbose()) {
-        std::clog << "Execute statement (status): " << status << " [" << ExecStatusTypeName[status] << "]" << std::endl;
-    }
-#endif
-
-	if ((status != PGRES_TUPLES_OK) && (status != PGRES_COMMAND_OK)) {
-        this->printerror(errmsg);
-
-		PQclear(res);
-
-#if defined(_DEBUG)
-		std::clog << "PQexecPrepared returned error status: " << status
-					<< " [" << ExecStatusTypeName[status] << "]" << std::endl;
-		std::clog << "Cleared result: " << this << std::endl;
-#endif
-
-		this->exit_nicely();
-
-		return nullptr;
-	}
-
-	return new PGanswer(res);
+	return this->checkresult(res, "PQexecPrepared", "Execute statement (status)", errmsg);
 }
 
 DBrecordset *PGconnection::query(const char *command, const char *stmtName)
@@ -390,9 +297,35 @@ DBrecordset *PGconnection::query(const char *command, const DBparameter &param, 
 	return recset;
 }
 
-PGconn *PGconnection::getPGconn(void) const
+const DBanswer *PGconnection::checkresult(PGresult *res, const char *funName, const char *logmsg, const char *errmsg)
 {
-	return this->m_pConn;
+	ExecStatusType status = PQresultStatus(res);
+
+#if defined(_DEBUG)
+    if (this->getVerbose()) {
+        std::clog << logmsg << ": " << status << " [" << ExecStatusTypeName[status] << "]" << std::endl;
+    }
+#endif
+
+	if ((status != PGRES_TUPLES_OK) && (status != PGRES_COMMAND_OK)) {
+        this->printerror(errmsg);
+
+		PQclear(res);
+
+#if defined(_DEBUG)
+		if (this->getVerbose()) {
+			std::clog << funName << " returned error status: " << status 
+						<< " [" << ExecStatusTypeName[status] << "]" << std::endl;
+			std::clog << "Cleared result: " << this << std::endl;
+		}
+#endif
+
+		this->exit_nicely();
+
+		return nullptr;
+	}
+
+	return new PGanswer(res);
 }
 
 std::string PGconnection::geterrorstring(void) const

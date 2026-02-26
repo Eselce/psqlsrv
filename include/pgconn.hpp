@@ -62,6 +62,8 @@ protected:
 
 	virtual bool connectdb(const char *host, const char *port, const char *options, const char *dbName, const char *login = nullptr, const char *pwd = nullptr) override;
 
+	virtual const DBanswer *checkresult(PGresult *res, const char *funName, const char *logmsg = cmdLogMsg, const char *errmsg = cmdErrorMsg);
+
 	virtual std::string geterrorstring(void) const override;
 
 	static void dumpoptionarr(void);
