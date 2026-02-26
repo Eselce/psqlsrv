@@ -10,7 +10,7 @@
 class DBstatement
 {
 public:
-	DBstatement(const std::string &command = "", const int nParams = 0, const DBparameterType *paramTypes = nullptr);
+	DBstatement(DBconnection *conn, const std::string &command = "", const int nParams = 0, const DBparameterType *paramTypes = nullptr);
 
 	virtual ~DBstatement(void);
 
@@ -38,16 +38,20 @@ public:
 
 	virtual int getFieldNumber(const std::string fieldName) const;
 
-	virtual void prepare(DBconnection *conn);
+	virtual void prepare(void);
 
-	virtual const DBanswer *exec(DBconnection *conn, const char *errmsg, const DBparameterFormat resultFormat);
+	virtual const DBanswer *exec(const char *errmsg, const DBparameterFormat resultFormat);
 
-	virtual const DBanswer *exec(DBconnection *conn, const DBparameter &param, const char *errmsg, const DBparameterFormat resultFormat);
-
-protected:
-	virtual void calcFieldInfos(DBconnection *conn);
+	virtual const DBanswer *exec(const DBparameter &param, const char *errmsg, const DBparameterFormat resultFormat);
 
 protected:
+	virtual void calcFieldInfos(void);
+
+	virtual void cleanFieldInfos(void);
+
+protected:
+	DBconnection *m_pConn;
+
 	std::string m_name;
 
 	const std::string m_command;
@@ -55,6 +59,8 @@ protected:
 	const int m_nParams;
 
 	const DBparameterType *m_paramTypes;
+
+	bool m_isprepared;
 
 	int m_nFields;
 

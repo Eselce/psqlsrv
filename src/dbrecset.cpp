@@ -77,7 +77,7 @@ void DBrecordset::createStatement(const char *command, const int nParams, const 
     std::clog << "Warning! Called createStatement() in base recordset: " << this << std::endl;
 #endif
 
-    this->m_pStmt = new DBstatement(command, nParams, paramTypes);
+    this->m_pStmt = new DBstatement(this->m_pConn, command, nParams, paramTypes);
 
     if (this->m_pStmt != nullptr) {
         this->m_pStmt->setName(stmtName);
@@ -91,7 +91,7 @@ void DBrecordset::prepare(void)
 	}
 
     if (this->m_pStmt != nullptr) {
-        this->m_pStmt->prepare(this->m_pConn);
+        this->m_pStmt->prepare();
 
 #if defined(_DEBUG)
         std::clog << "Prepared statement " << this->m_pStmt->getName() << " for recordset: " << this << std::endl;
@@ -117,7 +117,7 @@ const DBanswer *DBrecordset::exec(const char *errmsg, const DBparameterFormat re
 	}
 
     if (this->m_pStmt != nullptr) {
-        ret = this->m_pStmt->exec(this->m_pConn, errmsg, resultFormat);
+        ret = this->m_pStmt->exec(errmsg, resultFormat);
 
 #if defined(_DEBUG)
         std::clog << "Called exec() for statement  " << this->m_pStmt->getName() << " for recordset: " << this << std::endl;
@@ -136,7 +136,7 @@ const DBanswer *DBrecordset::exec(const DBparameter &param, const char *errmsg, 
 	}
 
     if (this->m_pStmt != nullptr) {
-        ret = this->m_pStmt->exec(this->m_pConn, param, errmsg, resultFormat);
+        ret = this->m_pStmt->exec(param, errmsg, resultFormat);
 
 #if defined(_DEBUG)
         std::clog << "Called exec() for statement  " << this->m_pStmt->getName() << " for recordset: " << this << std::endl;

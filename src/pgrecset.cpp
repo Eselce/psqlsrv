@@ -34,7 +34,7 @@ void PGrecordset::createStatement(const char *command, const int nParams, const 
         delete this->m_pStmt;
     }
 
-    this->m_pStmt = new PGstatement(command, nParams, paramTypes);
+    this->m_pStmt = new PGstatement(this->m_pConn, command, nParams, paramTypes);
 
     if (this->m_pStmt != nullptr) {
         this->m_pStmt->setName(stmtName);

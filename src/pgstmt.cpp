@@ -8,8 +8,8 @@
 const std::string PGstatement::m_autoname_prefix = "stmt_";
 int PGstatement::m_autoname_index = 0;
 
-PGstatement::PGstatement(const std::string &command, const int nParams, const DBparameterType *paramTypes)
-:	DBstatement(command, nParams, paramTypes)
+PGstatement::PGstatement(DBconnection *conn, const std::string &command, const int nParams, const DBparameterType *paramTypes)
+:	DBstatement(conn, command, nParams, paramTypes)
 {
 }
 
@@ -35,22 +35,22 @@ int PGstatement::getFieldNumber([[maybe_unused]] const std::string fieldName) co
 	int field = 0;  // TODO
 
 /*
-    if ((conn == nullptr) || ! conn->check()) {
+    if ((this->m_pConn == nullptr) || ! this->m_pConn->check()) {
         m_pRes = nullptr;
 
         throw std::invalid_argument("getFieldNumber(): Need an open connection to get infos for the statement");
     } else {
 #if defined(_DEBUG)
-        if (conn->getVerbose()) {
+        if (this->m_pConn->getVerbose()) {
             std::clog << "Getting field number: " << this->getName() << " = " << this->getCommand()
                         << "[" << this->getNParams() << "]" << std::endl;
         }
 #endif
 
-        m_pRes = PQdescribePrepared(conn->getPGconn(), this->getName());
+        m_pRes = PQdescribePrepared(this->m_pConn->getPGconn(), this->getName());
 
 #if defined(_DEBUG)
-        if (conn->getVerbose()) {
+        if (this->m_pConn->getVerbose()) {
             ExecStatusType status = PQresultStatus(m_pRes);
 
             std::clog << "Describe prepared statement (status): " << status << " [" << ExecStatusTypeName[status] << "]" << std::endl;
@@ -69,76 +69,73 @@ int PGstatement::getFieldNumber([[maybe_unused]] const std::string fieldName) co
 	return (field + 1);  // Adjust for 1-based indexing
 }
 
-void PGstatement::prepare(DBconnection *conn)
+void PGstatement::prepare(void)
 {
-    this->prepare(dynamic_cast<PGconnection *>(conn));
-}
-
-void PGstatement::prepare(PGconnection *conn)
-{
-    if ((conn == nullptr) || ! conn->check()) {
+    if ((this->m_pConn == nullptr) || ! this->m_pConn->check()) {
         m_pRes = nullptr;
 
         throw std::invalid_argument("prepare(): Need an open connection to prepare the statement");
     } else {
 #if defined(_DEBUG)
-        if (conn->getVerbose()) {
+        if (this->m_pConn->getVerbose()) {
             std::clog << "Preparing statement: " << this->getName() << " = " << this->getCommand()
                         << "[" << this->getNParams() << "]" << std::endl;
         }
 #endif
 
+        PGconnection *pConn = dynamic_cast<PGconnection *>(this->m_pConn);
+
 #if defined(_DEBUG)
-        PGconn *pConn = conn->getPGconn();
+        // Same action, but with intermediate values for debugging...
+        PGconn *pgConn = pConn->getPGconn();
         const char *stmtName = this->getName();
         const char *query = this->getCommand();
         int nParams = this->getNParams();
         const Oid *paramTypes = this->getParamTypes();
 
-        m_pRes = PQprepare(pConn, stmtName, query, nParams, paramTypes);
+        m_pRes = PQprepare(pgConn, stmtName, query, nParams, paramTypes);
 #else
-        m_pRes = PQprepare(conn->getPGconn(), this->getName(), this->getCommand(), this->getNParams(), this->getParamTypes());
+        m_pRes = PQprepare(pConn->getPGconn(), this->getName(), this->getCommand(), this->getNParams(), this->getParamTypes());
 #endif
 
 #if defined(_DEBUG)
-        if (conn->getVerbose()) {
+        if (this->m_pConn->getVerbose()) {
             ExecStatusType status = PQresultStatus(m_pRes);
 
             std::clog << "Prepared statement (status): " << status << " [" << ExecStatusTypeName[status] << "]" << std::endl;
         }
+
+        this->m_pConn->printerror();
 
         PQclear(m_pRes);
 
         m_pRes = nullptr;
 #endif
 
-        DBstatement::prepare(conn);  // Base class, triggers calcFieldInfos()...
+        DBstatement::prepare();  // Base class, triggers calcFieldInfos()...
     }
 }
 
-void PGstatement::calcFieldInfos(DBconnection *conn)
+void PGstatement::calcFieldInfos(void)
 {
-    this->calcFieldInfos(dynamic_cast<PGconnection *>(conn));
-}
-
-void PGstatement::calcFieldInfos(PGconnection *conn)
-{
-    if ((conn == nullptr) || ! conn->check()) {
+    if ((this->m_pConn == nullptr) || ! this->m_pConn->check()) {
         m_pRes = nullptr;
 
         throw std::invalid_argument("calcFieldInfos(): Need an open connection to prepare the statement");
     } else {
 #if defined(_DEBUG)
-        if (conn->getVerbose()) {
+        if (this->m_pConn->getVerbose()) {
             std::clog << "Calculating field data: " << this->getName() << " = " << this->getCommand()
                         << "[" << this->getNParams() << "]" << std::endl;
         }
 #endif
 
-        m_pRes = PQdescribePrepared(conn->getPGconn(), this->getName());
+        PGconnection *pConn = dynamic_cast<PGconnection *>(this->m_pConn);
+
+        m_pRes = PQdescribePrepared(pConn->getPGconn(), this->getName());
 
 #if defined(_DEBUG)
-        if (conn->getVerbose()) {
+        if (this->m_pConn->getVerbose()) {
             ExecStatusType status = PQresultStatus(m_pRes);
 
             std::clog << "Describe prepared statement (status): " << status << " [" << ExecStatusTypeName[status] << "]" << std::endl;
@@ -146,7 +143,7 @@ void PGstatement::calcFieldInfos(PGconnection *conn)
 #endif
 
 #if defined(_DEBUG)
-        if (conn->getVerbose()) {
+        if (this->m_pConn->getVerbose()) {
             const int nParams = PQnparams(m_pRes);
             std::string params = "[" + std::to_string(nParams) + "] {";
 
@@ -185,7 +182,7 @@ void PGstatement::calcFieldInfos(PGconnection *conn)
         }
 
 #if defined(_DEBUG)
-        if (conn->getVerbose()) {
+        if (this->m_pConn->getVerbose()) {
             std::clog << "Info for statement (fields): " << this->getName() << " = " << this->getCommand()
                         << "[" << this->getNParams() << "]: "
                         << nTuples << " x " << nFields << std::endl;
@@ -200,22 +197,3 @@ void PGstatement::calcFieldInfos(PGconnection *conn)
     }
 }
 
-const DBanswer *PGstatement::exec(DBconnection *conn, const char *errmsg, const DBparameterFormat resultFormat)
-{
-    return this->exec(dynamic_cast<PGconnection *>(conn), errmsg, resultFormat);
-}
-
-const DBanswer *PGstatement::exec(PGconnection *conn, const char *errmsg, const DBparameterFormat resultFormat)
-{
-    return DBstatement::exec(conn, errmsg, resultFormat);
-}
-
-const DBanswer *PGstatement::exec(DBconnection *conn, const DBparameter &param, const char *errmsg, const DBparameterFormat resultFormat)
-{
-    return this->exec(dynamic_cast<PGconnection *>(conn), param, errmsg, resultFormat);
-}
-
-const DBanswer *PGstatement::exec(PGconnection *conn, const DBparameter &param, const char *errmsg, const DBparameterFormat resultFormat)
-{
-    return DBstatement::exec(conn, param, errmsg, resultFormat);
-}

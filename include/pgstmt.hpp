@@ -8,7 +8,7 @@
 class PGstatement : public DBstatement
 {
 public:
-	PGstatement(const std::string &command = "", const int nParams = 0, const DBparameterType *paramTypes = nullptr);
+	PGstatement(DBconnection *conn, const std::string &command = "", const int nParams = 0, const DBparameterType *paramTypes = nullptr);
 
 	virtual ~PGstatement(void) override;
 
@@ -16,22 +16,10 @@ public:
 
 	virtual int getFieldNumber(const std::string fieldName) const override;
 
-	virtual void prepare(DBconnection *conn) override;
-
-	virtual void prepare(PGconnection *conn);
-
-	virtual const DBanswer *exec(DBconnection *conn, const char *errmsg, const DBparameterFormat resultFormat) override;
-
-	virtual const DBanswer *exec(PGconnection *conn, const char *errmsg, const DBparameterFormat resultFormat);
-
-	virtual const DBanswer *exec(DBconnection *conn, const DBparameter &param, const char *errmsg, const DBparameterFormat resultFormat) override;
-
-	virtual const DBanswer *exec(PGconnection *conn, const DBparameter &param, const char *errmsg, const DBparameterFormat resultFormat);
+	virtual void prepare(void) override;
 
 protected:
-	virtual void calcFieldInfos(DBconnection *conn) override;
-
-	virtual void calcFieldInfos(PGconnection *conn);
+	virtual void calcFieldInfos(void) override;
 
 protected:
 	static const std::string m_autoname_prefix;

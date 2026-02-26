@@ -3,11 +3,13 @@
 
 #include "dbstmt.hpp"
 
-DBstatement::DBstatement(const std::string &command, const int nParams, const DBparameterType *paramTypes)
-:	m_name(this->getautoname()),
+DBstatement::DBstatement(DBconnection *conn, const std::string &command, const int nParams, const DBparameterType *paramTypes)
+:	m_pConn(conn),
+	m_name(this->getautoname()),
     m_command(command),
     m_nParams(nParams),
     m_paramTypes(paramTypes),
+	m_isprepared(false),
 	m_nFields(0),
 	m_fieldTypes(nullptr),
 	m_fieldNames(nullptr)
@@ -53,17 +55,21 @@ const DBparameterType *DBstatement::getParamTypes(void) const
 
 void DBstatement::resize(int nFields)
 {
-	if (this->m_fieldTypes != nullptr) {
-		delete[] this->m_fieldTypes;
-	}
+	if (this->m_nFields > 0) {
+		this->cleanFieldInfos();
 
-	if (this->m_fieldNames != nullptr) {
-		delete[] this->m_fieldNames;
+		if (this->m_fieldTypes != nullptr) {
+			delete[] this->m_fieldTypes;
+		}
+
+		if (this->m_fieldNames != nullptr) {
+			delete[] this->m_fieldNames;
+		}
 	}
 
 	this->m_nFields = nFields;
 
-	if (nFields > 0) {
+	if (this->m_nFields > 0) {
 		this->m_fieldTypes = new DBparameterType[nFields];
 
 		this->m_fieldNames = new std::string[nFields];
@@ -101,36 +107,54 @@ int DBstatement::getFieldNumber([[maybe_unused]] const std::string fieldName) co
 	return (field + 1);  // Adjust for 1-based indexing
 }
 
-void DBstatement::prepare(DBconnection *conn)
+void DBstatement::prepare(void)
 {
-	// Default implementation does nothing, but derived classes can override this to prepare the statement on the connection.
-	this->calcFieldInfos(conn);
+	// Default implementation triggers calcFieldInfos(), but derived classes can override this but should call this to prepare the statement on the connection.
+	this->calcFieldInfos();
+
+	this->m_isprepared = true;
 }
 
-void DBstatement::calcFieldInfos([[maybe_unused]] DBconnection *conn)
+void DBstatement::calcFieldInfos(void)
 {
 	// Default implementation does nothing, but derived classes can override this to calculate infos after preparation of the statement on the connection.
 }
 
-const DBanswer *DBstatement::exec(DBconnection *conn, const char *errmsg, const DBparameterFormat resultFormat)
+void DBstatement::cleanFieldInfos(void) {
+	// Default frees the statement in the database, but derived classes can override this but should call this to prepare the statement on the connection.
+	if (this->m_isprepared) {
+		if (this->m_pConn != nullptr) {
+			this->m_pConn->freestmt(this->getName());
+		}
+
+		this->m_isprepared = false;
+	}
+}
+
+const DBanswer *DBstatement::exec(const char *errmsg, const DBparameterFormat resultFormat)
 {
 	const DBanswer *ret = nullptr;
 
-	if (conn != nullptr) {
-		ret = conn->exec(this, errmsg, resultFormat);
+	if (this->m_isprepared) {
+		if (this->m_pConn != nullptr) {
+			ret = this->m_pConn->exec(this, errmsg, resultFormat);
+		}
 	}
 
 	return ret;
 }
 
-const DBanswer *DBstatement::exec(DBconnection *conn, const DBparameter &param, const char *errmsg, const DBparameterFormat resultFormat)
+const DBanswer *DBstatement::exec(const DBparameter &param, const char *errmsg, const DBparameterFormat resultFormat)
 {
 	const DBanswer *ret = nullptr;
 
-	if (conn != nullptr) {
-		ret = conn->exec(this, param, errmsg, resultFormat);
+	if (this->m_isprepared) {
+		if (this->m_pConn != nullptr) {
+			ret = this->m_pConn->exec(this, param, errmsg, resultFormat);
+		}
 	}
 
 	return ret;
 }
+
 
