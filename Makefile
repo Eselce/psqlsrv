@@ -44,6 +44,7 @@ server_cpp := \
 	      dbstmt.cpp \
 		  dbquery.cpp \
 	      pgconn.cpp \
+	      pgconnex.cpp \
 	      pgparam.cpp \
 	      pgtupel.cpp \
 	      pgrecset.cpp \
@@ -60,9 +61,9 @@ test_cpp   := \
 # EOL test source files
 
 # server dependency on $(DBINC)
-server_inc := nicesvc.cpp httpsrv.cpp dbconn.cpp dbparam.cpp dbtupel.cpp dbrecset.cpp dbanswer.cpp dbstmt.cpp dbquery.cpp pgconn.cpp pgparam.cpp pgtupel.cpp pgrecset.cpp pganswer.cpp pgstmt.cpp pgquery.cpp
+server_inc := nicesvc.cpp httpsrv.cpp dbconn.cpp dbparam.cpp dbtupel.cpp dbrecset.cpp dbanswer.cpp dbstmt.cpp dbquery.cpp pgconn.cpp pgconnex.hpp pgparam.cpp pgtupel.cpp pgrecset.cpp pganswer.cpp pgstmt.cpp pgquery.cpp
 db_inc     := dbanswer.cpp dbconn.cpp dbparam.cpp dbtupel.cpp dbrecset.cpp dbstmt.cpp dbquery.cpp
-pg_inc     := pganswer.cpp pgconn.cpp pgparam.cpp pgtupel.cpp pgrecset.cpp pgstmt.cpp pgquery.cpp
+pg_inc     := pganswer.cpp pgconn.cpp pgconnex.cpp pgparam.cpp pgtupel.cpp pgrecset.cpp pgstmt.cpp pgquery.cpp
 httplib_inc := httpsrv.cpp
 catch2_inc := test_dummy.cpp
 
