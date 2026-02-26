@@ -107,7 +107,7 @@ bool PGconnection::connectdb(const char *host, const char *port, const char *opt
 
 bool PGconnection::checkconnect(void)
 {
-	std::cout << this->status() << std::endl;
+	std::cout << this->statusconnect() << std::endl;
 
 	/* Set always-secure search path, so malicious users can't take control. */
 	const std::string answer = this->getanswer("SELECT pg_catalog.set_config('search_path', '', false)", "SET failed");
@@ -125,7 +125,7 @@ bool PGconnection::check(void)
 
 	/* Check to see that the backend connection was successfully made */
 	if (status != CONNECTION_OK) {
-		std::cerr << PQerrorMessage(m_pConn);
+        this->printerror();
 
 #if defined(_DEBUG)
         std::clog << "check() got error status: " << status << " [" << ConnStatusTypeName[status] << "]" << std::endl;
@@ -148,7 +148,7 @@ void PGconnection::disconnect(const bool force)
 	}
 }
 
-std::string PGconnection::status(void) const
+std::string PGconnection::statusconnect(void) const
 {
 	ConnStatusType status = PQstatus(m_pConn);
 	std::string ret;
@@ -170,8 +170,13 @@ std::string PGconnection::status(void) const
 		ret = "Connected to server...";
 		break;
 
+	case CONNECTION_OK:
+		ret = "OK";
+		break;
+
 	default:
 		ret = "Connecting...";
+		break;
 	}
 
 	return ret;
@@ -199,7 +204,7 @@ const DBanswer *PGconnection::exec(const char *command, const char *errmsg, [[ma
 #endif
 
 	if ((status != PGRES_TUPLES_OK) && (status != PGRES_COMMAND_OK)) {
-		std::cerr << errmsg << ": " << PQerrorMessage(m_pConn);
+        this->printerror(errmsg);
 
 		PQclear(res);
 
@@ -241,7 +246,7 @@ const DBanswer *PGconnection::exec(const char *command, const DBparameter &param
 #endif
 
 	if ((status != PGRES_TUPLES_OK) && (status != PGRES_COMMAND_OK)) {
-		std::cerr << errmsg << ": " << PQerrorMessage(m_pConn);
+        this->printerror(errmsg);
 
 		PQclear(res);
 
@@ -285,7 +290,7 @@ const DBanswer *PGconnection::exec(const DBstatement *stmt, const char *errmsg, 
 #endif
 
 	if ((status != PGRES_TUPLES_OK) && (status != PGRES_COMMAND_OK)) {
-		std::cerr << errmsg << ": " << PQerrorMessage(m_pConn);
+        this->printerror(errmsg);
 
 		PQclear(res);
 
@@ -329,7 +334,7 @@ const DBanswer *PGconnection::exec(const DBstatement *stmt, const DBparameter &p
 #endif
 
 	if ((status != PGRES_TUPLES_OK) && (status != PGRES_COMMAND_OK)) {
-		std::cerr << errmsg << ": " << PQerrorMessage(m_pConn);
+        this->printerror(errmsg);
 
 		PQclear(res);
 
@@ -388,6 +393,26 @@ DBrecordset *PGconnection::query(const char *command, const DBparameter &param, 
 PGconn *PGconnection::getPGconn(void) const
 {
 	return this->m_pConn;
+}
+
+std::string PGconnection::geterrorstring(void) const
+{
+	// This errorMessage is either empty or a (multi line) string
+	// held by PQ with newline at the end. Don't free it! PQfinish does it.
+	char *errorMessage = PQerrorMessage(this->getPGconn());
+	std::string ret(errorMessage);
+
+	return ret;
+}
+
+void PGconnection::freestmt(const char *stmtname)
+{
+    // Freeing statement quick and dirty, there may be no API function for it...
+    std::string deallocate = "DEALLOCATE PREPARE ";
+
+    deallocate += stmtname;
+
+    this->getanswer(deallocate.c_str()); 
 }
 
 void PGconnection::dumpoptions(void) const

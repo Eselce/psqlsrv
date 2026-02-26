@@ -1,6 +1,8 @@
 
 #pragma once
 
+#include <iostream>
+
 #include <string>
 
 #include "dbanswer.hpp"
@@ -37,7 +39,7 @@ public:
 
 	virtual bool check(void) = 0;
 
-	virtual std::string status(void) const = 0;
+	virtual std::string statusconnect(void) const = 0;
 
 	virtual const DBanswer *exec(const char *command, const char *errmsg = cmdErrorMsg, const DBparameterFormat resultFormat = FORMAT_TEXT) = 0;
 
@@ -61,6 +63,10 @@ public:
 
 	virtual DBrecordset *query(const char *command, const DBparameter &param, const char *stmtName = nullptr) = 0;
 
+	virtual void printerror(const char *errmsg = cmdErrorMsg, std::ostream &ost = std::cerr) const;
+
+	virtual void freestmt(const char *stmtname) = 0;
+
 	virtual void dumpoptions(void) const = 0;
 
 protected:
@@ -73,6 +79,8 @@ protected:
 	static std::string answerstring(const DBanswer *answ);
 
 	static std::string binaryanswer(const DBanswer *answ);
+
+	virtual std::string geterrorstring(void) const = 0;
 
 	static void dumpconninfo(const char **keys, const char **vals);
 

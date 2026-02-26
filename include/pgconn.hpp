@@ -33,7 +33,7 @@ public:
 
 	virtual void disconnect(const bool force = true) override;
 
-	virtual std::string status(void) const override;
+	virtual std::string statusconnect(void) const override;
 
 	virtual const DBanswer *exec(const char *command, const char *errmsg = cmdErrorMsg, const DBparameterFormat resultFormat = FORMAT_TEXT) override;
 
@@ -49,6 +49,8 @@ public:
 
 	virtual PGconn *getPGconn(void) const;
 
+	virtual void freestmt(const char *stmtname) override;
+
 	virtual void dumpoptions(void) const override;
 
 protected:
@@ -59,6 +61,8 @@ protected:
 	virtual bool connectdb(const char **keys, const char **vals, const bool blocking = false, const int expand_dbname = 0) override;
 
 	virtual bool connectdb(const char *host, const char *port, const char *options, const char *dbName, const char *login = nullptr, const char *pwd = nullptr) override;
+
+	virtual std::string geterrorstring(void) const override;
 
 	static void dumpoptionarr(void);
 

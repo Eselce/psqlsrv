@@ -197,6 +197,15 @@ std::string DBconnection::binaryanswer(const DBanswer *answ)
 	return answ->getanswer(FORMAT_BINARY);
 }
 
+void DBconnection::printerror(const char *errmsg, std::ostream &ost) const
+{
+	std::string errorstr = this->geterrorstring();
+
+	if (! errorstr.empty()) {
+		ost << errmsg << ": " << errorstr;
+	}
+}
+
 void DBconnection::dumpconninfo(const char **keys, const char **vals)
 {
 	for (int index = 0; (keys[index] != nullptr) && *keys[index]; ++index) {
