@@ -30,7 +30,8 @@ bool test_poc::classrun(PGconnection &pg, const char *command, const int arg) co
 
     delete recset;
 
-    this->freestmt(pg, stmtname);
+    // Now in destructor of statement!
+    //this->freestmt(pg, stmtname);
 
     return true;
 }
@@ -39,20 +40,21 @@ bool test_poc::autorun(PGconnection &pg, const char *command, const int arg) con
     const char *stmtname = "mystat";
     const Oid paramTypes[] = { INT4OID };
     const int nParams = (sizeof(paramTypes) / sizeof(Oid));
-    PGstatement stmt(command, nParams, paramTypes);
+    PGstatement stmt(&pg, command, nParams, paramTypes);
     PGparameter param(nParams);
 
     param.bind(arg, nParams);
 
     stmt.setName(stmtname);
 
-    stmt.prepare(&pg);
+    stmt.prepare();
 
-    const DBanswer *answ = stmt.exec(&pg, param, cmdErrorMsg, FORMAT_TEXT);
+    const DBanswer *answ = stmt.exec(param, cmdErrorMsg, FORMAT_TEXT);
 
     std::cout << "ANSWER: " << answ->getanswer(FORMAT_TEXT) << std::endl << std::endl;
 
-    this->freestmt(pg, stmtname);
+    // Now in destructor of statement!
+    //this->freestmt(pg, stmtname);
 
     return true;
 }
@@ -77,7 +79,7 @@ bool test_poc::manualrun(PGconnection &pg, const char *command, const int arg) c
                 << std::endl;
 
     if ((status != PGRES_TUPLES_OK) && (status != PGRES_COMMAND_OK)) {
-        std::cerr << cmdErrorMsg << ": " << PQerrorMessage(pg.getPGconn());
+        pg.printerror();
 
         std::clog << "PQprepare returned error status: " << status
 #if defined(_DEBUG)
@@ -100,7 +102,7 @@ bool test_poc::manualrun(PGconnection &pg, const char *command, const int arg) c
                 << std::endl;
 
     if ((status != PGRES_TUPLES_OK) && (status != PGRES_COMMAND_OK)) {
-        std::cerr << cmdErrorMsg << ": " << PQerrorMessage(pg.getPGconn());
+        pg.printerror();
 
         PQclear(exeres);
 
