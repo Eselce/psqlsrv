@@ -28,7 +28,7 @@ public:
 
 	void stop(void);
 
-	int setupStatic();
+	int setupStatic(void);
 
 	void setDBConnection(DBconnection *conn);
 

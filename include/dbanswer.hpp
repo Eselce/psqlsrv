@@ -18,9 +18,9 @@ public:
 	virtual std::string getanswer(const DBparameterFormat format = FORMAT_TEXT) const = 0;
 
 protected:
-	virtual std::string gettexttable() const = 0;
+	virtual std::string gettexttable(void) const = 0;
 
-	virtual std::string getbinarytable() const = 0;
+	virtual std::string getbinarytable(void) const = 0;
 
 protected:
 };
