@@ -13,19 +13,19 @@ public:
 	virtual ~DBtupel(void);
 
 public:
-	virtual void bind(const int &value, const int pos);
+	virtual void bindvar(const int &value, const int pos);
 
-	virtual void bind(const short int &value, const int pos);
+	virtual void bindvar(const short int &value, const int pos);
 
-	virtual void bind(const long int &value, const int pos);
+	virtual void bindvar(const long int &value, const int pos);
 
-	virtual void bind(const float &value, const int pos);
+	virtual void bindvar(const float &value, const int pos);
 
-	virtual void bind(const double &value, const int pos);
+	virtual void bindvar(const double &value, const int pos);
 
-	virtual void bind(const std::string &value, const int pos);
+	virtual void bindvar(const std::string &value, const int pos);
 
-	virtual void bind(const char *value, const int pos);
+	virtual void bindvar(const char *value, const int pos);
 
 	virtual int count(void) const;
 
@@ -40,6 +40,8 @@ public:
 protected:
 	virtual void resize(const int nFields);
 
+	virtual void *convertlittleendian(const void *value, const int length, const int pos = 1);
+
 	virtual void bindany(const void *value, const int pos, const DBparameterType type, const int length = 0, const DBparameterFormat format = FORMAT_BINARY);
 
 protected:
@@ -52,5 +54,7 @@ protected:
 	int *m_lengths;
 
 	DBparameterFormat *m_formats;
+
+	int64_t *m_valbuffer;
 };
 

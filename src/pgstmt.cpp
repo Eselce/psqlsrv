@@ -19,7 +19,7 @@ PGstatement::~PGstatement(void)
         PQclear(m_pRes);
 
 #if defined(_DEBUG)
-        std::clog << "Cleared prepared statement: " << this->getName() << std::endl;
+        std::clog << "Cleared prepared statement " << this->getName() << ": " << this << std::endl;
 		m_pRes = nullptr;
 #endif
     }
@@ -53,7 +53,7 @@ int PGstatement::getFieldNumber([[maybe_unused]] const std::string fieldName) co
         if (this->m_pConn->getVerbose()) {
             ExecStatusType status = PQresultStatus(m_pRes);
 
-            std::clog << "Describe prepared statement (status): " << status << " [" << ExecStatusTypeName[status] << "]" << std::endl;
+            std::clog << "Describe prepared statement " << this.getName() << " " << this << ": status = " << status << " [" << ExecStatusTypeName[status] << "]" << std::endl;
         }
 #endif
 
@@ -78,7 +78,7 @@ void PGstatement::prepare(void)
     } else {
 #if defined(_DEBUG)
         if (this->m_pConn->getVerbose()) {
-            std::clog << "Preparing statement: " << this->getName() << " = " << this->getCommand()
+            std::clog << "Preparing statement " << this->getName() << ": " << this << " = " << this->getCommand()
                         << "[" << this->getNParams() << "]" << std::endl;
         }
 #endif
@@ -102,7 +102,7 @@ void PGstatement::prepare(void)
         if (this->m_pConn->getVerbose()) {
             ExecStatusType status = PQresultStatus(m_pRes);
 
-            std::clog << "Prepared statement (status): " << status << " [" << ExecStatusTypeName[status] << "]" << std::endl;
+            std::clog << "Prepared statement " << this->getName() << ": " << this << " status = " << status << " [" << ExecStatusTypeName[status] << "]" << std::endl;
         }
 
         this->m_pConn->printerror();
@@ -138,7 +138,7 @@ void PGstatement::calcFieldInfos(void)
         if (this->m_pConn->getVerbose()) {
             ExecStatusType status = PQresultStatus(m_pRes);
 
-            std::clog << "Describe prepared statement (status): " << status << " [" << ExecStatusTypeName[status] << "]" << std::endl;
+            std::clog << "Describe prepared statement " << this->getName() << ": " << this << " status = " << status << " [" << ExecStatusTypeName[status] << "]" << std::endl;
         }
 #endif
 

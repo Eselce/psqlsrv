@@ -67,7 +67,12 @@ void DBstatement::resize(int nFields)
 		if (this->m_fieldNames != nullptr) {
 			delete[] this->m_fieldNames;
 		}
+
+#if defined(_DEBUG)
+		std::clog << "Deleted old field info arrays in statement " << this->getName() << ": " << this << std::endl;
+#endif
 	}
+
 
 	this->m_nFields = nFields;
 
@@ -75,6 +80,10 @@ void DBstatement::resize(int nFields)
 		this->m_fieldTypes = new DBparameterType[nFields];
 
 		this->m_fieldNames = new std::string[nFields];
+
+#if defined(_DEBUG)
+		std::clog << "Resized field info arrays to " << this->m_nFields << " columns in statement " << this->getName() << ": " << this << std::endl;
+#endif
 	}
 }
 

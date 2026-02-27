@@ -32,37 +32,37 @@ void PGparameter::bindany(const void *value, const int pos, const Oid type, cons
 	DBparameter::bindany(value, pos, type, length, format);
 }
 
-void PGparameter::bind(const int &value, const int pos)
+void PGparameter::bindvar(const int &value, const int pos)
 {
 	this->bindany(&value, pos, INT4OID, sizeof(int), FORMAT_BINARY);
 }
 
-void PGparameter::bind(const short int &value, const int pos)
+void PGparameter::bindvar(const short int &value, const int pos)
 {
 	this->bindany(&value, pos, INT2OID, sizeof(short int), FORMAT_BINARY);
 }
 
-void PGparameter::bind(const long int &value, const int pos)
+void PGparameter::bindvar(const long int &value, const int pos)
 {
 	this->bindany(&value, pos, INT8OID, sizeof(long int), FORMAT_BINARY);
 }
 
-void PGparameter::bind(const float &value, const int pos)
+void PGparameter::bindvar(const float &value, const int pos)
 {
 	this->bindany(&value, pos, FLOATOID, sizeof(float), FORMAT_BINARY);
 }
 
-void PGparameter::bind(const double &value, const int pos)
+void PGparameter::bindvar(const double &value, const int pos)
 {
 	this->bindany(&value, pos, DOUBLEOID, sizeof(double), FORMAT_BINARY);
 }
 
-void PGparameter::bind(const std::string &value, const int pos)
+void PGparameter::bindvar(const std::string &value, const int pos)
 {
-	this->bind(value.c_str(), pos);
+	this->bindvar(value.c_str(), pos);
 }
 
-void PGparameter::bind(const char *value, const int pos)
+void PGparameter::bindvar(const char *value, const int pos)
 {
 	this->bindany(value, pos, VARCHAROID, std::strlen(value), FORMAT_TEXT);
 }

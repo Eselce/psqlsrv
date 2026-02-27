@@ -3,94 +3,143 @@
 
 #include <cstring>
 
+#include <endian.h>
+
 #include "dbtupel.hpp"
 
 DBtupel::DBtupel(const int nFields)
+:	m_nFields(0),
+	m_types(nullptr),
+	m_values(nullptr),
+	m_lengths(nullptr),
+	m_formats(nullptr),
+	m_valbuffer(nullptr)
 {
-	m_nFields = nFields;
-
-	m_types = new DBparameterType[nFields];
-	m_values = new const char *[nFields];
-	m_lengths = new int[nFields];
-	m_formats = new DBparameterFormat[nFields];
+	this->resize(nFields);
 }
 
 DBtupel::~DBtupel(void)
 {
-	delete[] m_types;
-	delete[] m_values;
-	delete[] m_lengths;
-	delete[] m_formats;
-
-#if defined(_DEBUG)
-	std::clog << "Deleted tupel arrays[" << m_nFields << "]: " << this << std::endl;
-#endif
+	this->resize(0);  // cleanup
 }
 
 void DBtupel::resize(const int nFields)
 {
-	m_nFields = nFields;
+	if (this->m_nFields > 0) {  // remove the old columns
+		if (this->m_types != nullptr) {
+			delete[] this->m_types;
+		}
 
-	delete[] m_types;
-	delete[] m_values;
-	delete[] m_lengths;
-	delete[] m_formats;
+		if (this->m_values != nullptr) {
+			delete[] this->m_values;
+		}
+
+		if (this->m_lengths != nullptr) {
+			delete[] this->m_lengths;
+		}
+
+		if (this->m_formats != nullptr) {
+			delete[] this->m_formats;
+		}
+
+		if (this->m_valbuffer != nullptr) {
+			delete[] this->m_valbuffer;
+		}
 
 #if defined(_DEBUG)
-	std::clog << "Deleted old tupel arrays: " << this << std::endl;
+		std::clog << "Deleted old tupel arrays[" << this->m_nFields << "]: " << this << std::endl;
 #endif
+	}
 
-	m_types = new DBparameterType[nFields];
-	m_values = new const char *[nFields];
-	m_lengths = new int[nFields];
-	m_formats = new DBparameterFormat[nFields];
+	this->m_nFields = nFields;
+
+	if (this->m_nFields > 0) {
+		this->m_types = new DBparameterType[nFields];
+		this->m_values = new const char *[nFields];
+		this->m_lengths = new int[nFields];
+		this->m_formats = new DBparameterFormat[nFields];
+		this->m_valbuffer = new int64_t[nFields];
 
 #if defined(_DEBUG)
-	std::clog << "Resized tupel to " << nFields << " fields: " << this << std::endl;
+		std::clog << "Resized tupel to " << this->m_nFields << " columns: " << this << std::endl;
 #endif
+	}
+}
+
+void *DBtupel::convertlittleendian(const void *value, const int length, const int pos)
+{
+	if ((pos < 1) || (pos > this->m_nFields)) {
+		std::cerr << "Error in convertlittleendian(): Illegal index " << pos << "! Should be between 1 and " << this->m_nFields << "..." << std::endl;
+
+		return nullptr;
+	}
+
+	void *ret = (this->m_valbuffer + (pos - 1));  // use the reserved space in m_valbuffer for the binary data (not strings)
+
+	switch (length) {
+	case 1:	*static_cast<char *>(ret) = *static_cast<const char *>(value);
+			break;  // unmodified
+	case 2:	*static_cast<int16_t *>(ret) = be16toh(*static_cast<const int16_t *>(value));
+			break;
+	case 4:	*static_cast<int32_t *>(ret) = be32toh(*static_cast<const int32_t *>(value));
+			break;
+	case 8:	*static_cast<int64_t *>(ret) = be64toh(*static_cast<const int64_t *>(value));
+			break;
+	default: ret = nullptr;
+			std::cerr << "convertlittleendian(): Illegal size (" << length << "!" << std::endl;
+			break;
+	}
+
+	return ret;
 }
 
 void DBtupel::bindany(const void *value, const int pos, const DBparameterType type, const int length, const DBparameterFormat format)
 {
+	if ((pos < 1) || (pos > this->m_nFields)) {
+		std::cerr << "Error in bindany(): Illegal index " << pos << "! Should be between 1 and " << this->m_nFields << "..." << std::endl;
+
+		return;
+	}
+
 	const int i = pos - 1;  // pos is 1-based, but arrays are 0-based
 
-	m_types[i] = type;
-	m_values[i] = static_cast<const char *>(value);
-	m_lengths[i] = length;
-	m_formats[i] = format;
+	this->m_types[i] = type;
+	this->m_values[i] = static_cast<const char *>(value);
+	this->m_lengths[i] = length;
+	this->m_formats[i] = format;
 }
 
-void DBtupel::bind(const int &value, const int pos)
+void DBtupel::bindvar(const int &value, const int pos)
 {
 	this->bindany(&value, pos, 1, sizeof(int), FORMAT_BINARY);
 }
 
-void DBtupel::bind(const short int &value, const int pos)
+void DBtupel::bindvar(const short int &value, const int pos)
 {
 	this->bindany(&value, pos, 2, sizeof(short int), FORMAT_BINARY);
 }
 
-void DBtupel::bind(const long int &value, const int pos)
+void DBtupel::bindvar(const long int &value, const int pos)
 {
 	this->bindany(&value, pos, 3, sizeof(long int), FORMAT_BINARY);
 }
 
-void DBtupel::bind(const float &value, const int pos)
+void DBtupel::bindvar(const float &value, const int pos)
 {
 	this->bindany(&value, pos, 4, sizeof(float), FORMAT_BINARY);
 }
 
-void DBtupel::bind(const double &value, const int pos)
+void DBtupel::bindvar(const double &value, const int pos)
 {
 	this->bindany(&value, pos, 5, sizeof(double), FORMAT_BINARY);
 }
 
-void DBtupel::bind(const std::string &value, const int pos)
+void DBtupel::bindvar(const std::string &value, const int pos)
 {
-	this->bind(value.c_str(), pos);
+	this->bindvar(value.c_str(), pos);
 }
 
-void DBtupel::bind(const char *value, const int pos)
+void DBtupel::bindvar(const char *value, const int pos)
 {
 	this->bindany(value, pos, 6, std::strlen(value), FORMAT_TEXT);
 }
