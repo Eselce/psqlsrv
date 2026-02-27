@@ -3,6 +3,8 @@
 
 #include <cstring>
 
+#include <endian.h>
+
 #include "dbparam.hpp"
 
 DBparameter::DBparameter(const int nParams)
@@ -48,6 +50,26 @@ void DBparameter::resize(const int nParams)
 #if defined(_DEBUG)
 	std::clog << "Resized parameter to " << nParams << " parameters: " << this << std::endl;
 #endif
+}
+
+void *DBparameter::convertbigendian(const void *value, const int length)
+{
+	void *ret = const_cast<void *>(value);  // TODO: We may have to allocate memory here instead!
+
+	switch (length) {
+	case 1:	break;  // nothing to do
+	case 2:	*static_cast<int16_t *>(ret) = htobe16(*static_cast<const int16_t *>(value));
+			break;
+	case 4:	*static_cast<int32_t *>(ret) = htobe32(*static_cast<const int32_t *>(value));
+			break;
+	case 8:	*static_cast<int64_t *>(ret) = htobe64(*static_cast<const int64_t *>(value));
+			break;
+	default: ret = nullptr;
+			std::cerr << "convertbigendian(): Illegal size (" << length << "!" << std::endl;
+			break;
+	}
+
+	return ret;
 }
 
 void DBparameter::bindany(const void *value, const int pos, const DBparameterType type, const int length, const DBparameterFormat format)
