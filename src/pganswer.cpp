@@ -56,6 +56,10 @@ std::string PGanswer::gettexttable(void) const
 	const int ntuples = PQntuples(m_pRes);
 	const int nfields = PQnfields(m_pRes);
 
+#if defined(_DEBUG)
+	std::clog << "Table " << this << ": " << ntuples << "x" << nfields << std::endl;
+#endif
+
 	for (int col = 0; col < nfields; ++col) {
 		char *value = PQfname(m_pRes, col);
 
