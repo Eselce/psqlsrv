@@ -247,9 +247,9 @@ const DBanswer *PGconnection::exec(const DBstatement *stmt, const DBparameter &p
 	}
 
 #if defined(_DEBUG)
-	std::string stmtText = ((stmt != nullptr) ? (" (" + std::string((stmt->getName() == nullptr) ? "null" : stmt->getName()) + ")") : " (null)");
-
     if (this->getVerbose()) {
+		std::string stmtText = ((stmt != nullptr) ? (" (" + std::string((stmt->getName() == nullptr) ? "null" : stmt->getName()) + ")") : " (null)");
+
         std::clog << "Executing: " << stmt->getCommand() << stmtText << " [" << param.count() << "] to " << resultFormat << std::endl;
     }
 #endif
@@ -285,9 +285,9 @@ DBrecordset *PGconnection::query(const char *command, const DBparameter &param, 
 	}
 
 #if defined(_DEBUG)
-	std::string stmtText = (" (" + std::string((stmtName == nullptr) ? "null" : stmtName) + ")");
-
     if (this->getVerbose()) {
+		std::string stmtText = (" (" + std::string((stmtName == nullptr) ? "null" : stmtName) + ")");
+
         std::clog << "Query: " << command << stmtText << " [" << param.count() << "]" << std::endl;
     }
 #endif
