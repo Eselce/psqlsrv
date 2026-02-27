@@ -120,7 +120,7 @@ const DBanswer *DBrecordset::exec(const char *errmsg, const DBparameterFormat re
         ret = this->m_pStmt->exec(errmsg, resultFormat);
 
 #if defined(_DEBUG)
-        std::clog << "Called exec() for statement  " << this->m_pStmt->getName() << " for recordset: " << this << std::endl;
+        std::clog << "Called exec() for statement " << this->m_pStmt->getName() << " in recordset: " << this << std::endl;
 #endif
     }
 
@@ -139,7 +139,7 @@ const DBanswer *DBrecordset::exec(const DBparameter &param, const char *errmsg, 
         ret = this->m_pStmt->exec(param, errmsg, resultFormat);
 
 #if defined(_DEBUG)
-        std::clog << "Called exec() for statement  " << this->m_pStmt->getName() << " for recordset: " << this << std::endl;
+        std::clog << "Called exec() for statement " << this->m_pStmt->getName() << " in recordset: " << this << std::endl;
 #endif
     }
 

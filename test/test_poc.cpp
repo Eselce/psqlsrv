@@ -24,7 +24,7 @@ bool test_poc::classrun(PGconnection &pg, const char *command, const int arg) co
     const int nParams = 1;
     PGparameter param(nParams);
 
-    param.bind(arg, nParams);
+    param.bindvar(arg, nParams);
 
     DBrecordset *recset = pg.query(command, param, stmtname);
 
@@ -45,7 +45,7 @@ bool test_poc::autorun(PGconnection &pg, const char *command, const int arg) con
     PGstatement stmt(&pg, command, nParams, paramTypes);
     PGparameter param(nParams);
 
-    param.bind(arg, nParams);
+    param.bindvar(arg, nParams);
 
     stmt.setName(stmtname);
 
@@ -76,7 +76,7 @@ bool test_poc::manualrun(PGconnection &pg, const char *command, const int arg) c
     PGresult *res = PQprepare(pg.getPGconn(), stmtname, command, nParams, paramTypes);
     ExecStatusType status = PQresultStatus(res);
 
-    std::clog << "Prepared statement (status): " << status
+    std::clog << "Prepared statement " << stmtname << ": status = " << status
 #if defined(_DEBUG)
                 << " [" << ExecStatusTypeName[status] << "]"
 #endif
@@ -99,7 +99,7 @@ bool test_poc::manualrun(PGconnection &pg, const char *command, const int arg) c
     PGresult *exeres = PQexecPrepared(pg.getPGconn(), stmtname, nParams, paramValues, paramLengths, paramFormats, FORMAT_TEXT);
     status = PQresultStatus(exeres);
 
-    std::clog << "Execute statement (status): " << status
+    std::clog << "Execute statement " << stmtname << ": status = " << status
 #if defined(_DEBUG)
                 << " [" << ExecStatusTypeName[status] << "]"
 #endif
@@ -110,7 +110,7 @@ bool test_poc::manualrun(PGconnection &pg, const char *command, const int arg) c
 
         PQclear(exeres);
 
-        std::clog << "PQexecPrepared returned error status: " << status
+        std::clog << "PQexecPrepared returned error status = " << status
 #if defined(_DEBUG)
                 << " [" << ExecStatusTypeName[status] << "]"
 #endif

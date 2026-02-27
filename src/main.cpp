@@ -52,10 +52,10 @@ int main(int argc, char **argv)
 		PGparameter parama(1);
 		PGparameter paramb(3);
 
-		parama.bind(2, 1);
-		paramb.bind("zahl", 1);
-		paramb.bind("klein", 2);
-		paramb.bind(2, 3);
+		parama.bindvar(2, 1);
+		paramb.bindvar("zahl", 1);
+		paramb.bindvar("klein", 2);
+		paramb.bindvar(2, 3);
 
 		std::cout << "ANSWER: " << pg.getanswer("SELECT zahl, klein FROM test2 WHERE \"ID\" = $1;", parama) << std::endl;
 
@@ -99,7 +99,7 @@ int main(int argc, char **argv)
 
 		PGparameter paramc(1);
 
-		paramc.bind(50, 1);
+		paramc.bindvar(50, 1);
 
 		recset = pg.query("SELECT * FROM test2 WHERE zahl > $1;", paramc);
 

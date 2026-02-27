@@ -236,8 +236,12 @@ const DBanswer *PGconnection::exec(const DBstatement *stmt, const char *errmsg, 
 #endif
 
 	PGresult *res = PQexec(this->m_pConn, stmt->getCommand());
+	std::string logmsg = "Execute statement ";
 
-	return this->checkresult(res, "PQexec", "Execute statement (status)", errmsg);
+	logmsg += stmt->getName();
+	logmsg += " (status)";
+
+	return this->checkresult(res, "PQexec", logmsg.c_str(), errmsg);
 }
 
 const DBanswer *PGconnection::exec(const DBstatement *stmt, const DBparameter &param, const char *errmsg, const DBparameterFormat resultFormat)
@@ -255,8 +259,12 @@ const DBanswer *PGconnection::exec(const DBstatement *stmt, const DBparameter &p
 #endif
 
 	PGresult *res = PQexecPrepared(this->m_pConn, stmt->getName(), param.count(), param.values(), param.lengths(), param.formats(), resultFormat);
+	std::string logmsg = "Execute statement ";
 
-	return this->checkresult(res, "PQexecPrepared", "Execute statement (status)", errmsg);
+	logmsg += stmt->getName();
+	logmsg += " (status)";
+
+	return this->checkresult(res, "PQexecPrepared", logmsg.c_str(), errmsg);
 }
 
 DBrecordset *PGconnection::query(const char *command, const char *stmtName)

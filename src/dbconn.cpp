@@ -164,7 +164,7 @@ std::string DBconnection::getanswer(const DBanswer *answ, const DBparameterForma
 
 #if defined(_DEBUG)
 	if (this->getVerbose()) {
-		std::clog << "[" << this << "] " << " -> " << answer << std::endl;
+		std::clog << "[" << this << "] -> " << answer << std::endl;
 	}
 #endif
 
