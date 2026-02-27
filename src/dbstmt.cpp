@@ -18,11 +18,13 @@ DBstatement::DBstatement(DBconnection *conn, const std::string &command, const i
 
 DBstatement::~DBstatement(void)
 {
-	this->resize(0);
+	this->resize(0);  // cleanup
 }
 
 void DBstatement::setName(const char *name)
 {
+	this->resize(this->m_nFields);  // cleanup
+
 	if (name != nullptr) {
 		m_name = name;
 	}
@@ -55,9 +57,9 @@ const DBparameterType *DBstatement::getParamTypes(void) const
 
 void DBstatement::resize(int nFields)
 {
-	if (this->m_nFields > 0) {
-		this->cleanFieldInfos();
+	this->cleanFieldInfos();  // cleanup statement if prepared
 
+	if (this->m_nFields > 0) {  // remove the old fieldinfo
 		if (this->m_fieldTypes != nullptr) {
 			delete[] this->m_fieldTypes;
 		}
@@ -69,7 +71,7 @@ void DBstatement::resize(int nFields)
 
 	this->m_nFields = nFields;
 
-	if (this->m_nFields > 0) {
+	if (this->m_nFields > 0) {  // allocate for new fieldinfo
 		this->m_fieldTypes = new DBparameterType[nFields];
 
 		this->m_fieldNames = new std::string[nFields];
