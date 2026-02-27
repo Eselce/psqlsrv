@@ -1,4 +1,6 @@
 
+#include <endian.h>
+
 #include "pg_type.h"
 
 #include "pgparam.hpp"
@@ -51,7 +53,9 @@ bool test_poc::autorun(PGconnection &pg, const char *command, const int arg) con
 
     const DBanswer *answ = stmt.exec(param, cmdErrorMsg, FORMAT_TEXT);
 
-    std::cout << "ANSWER: " << answ->getanswer(FORMAT_TEXT) << std::endl << std::endl;
+    if (answ != nullptr) {
+        std::cout << "ANSWER: " << answ->getanswer(FORMAT_TEXT) << std::endl << std::endl;
+    }
 
     // Now in destructor of statement!
     //this->freestmt(pg, stmtname);
@@ -63,7 +67,7 @@ bool test_poc::manualrun(PGconnection &pg, const char *command, const int arg) c
     const char *stmtname = "mystat";
     const Oid paramTypes[] = { INT4OID };
     const int nParams = (sizeof(paramTypes) / sizeof(Oid));
-    const int paramData[] = { arg };
+    const int paramData[] = { htobe32(arg) };  // PQ expects big endian values in binary data
     const int *paramPointers[] = { paramData };
     char **paramValues = reinterpret_cast<char **>(const_cast<int **>(paramPointers));
     const int paramLengths[] = { sizeof(arg) };

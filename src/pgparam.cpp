@@ -16,12 +16,12 @@ PGparameter::~PGparameter(void)
 
 void PGparameter::bindany(const void *value, const int pos, const Oid type, const int length, const DBparameterFormat format)
 {
-	const int i = pos - 1;  // pos is 1-based, but arrays are 0-based
+	if (format == FORMAT_BINARY) {
+		// libpq handles binary data with big endian!
+		value = this->convertbigendian(value, length);
+	}
 
-	this->m_types[i] = type;
-	this->m_values[i] = static_cast<const char *>(value);
-	this->m_lengths[i] = length;
-	this->m_formats[i] = format;
+	DBparameter::bindany(value, pos, type, length, format);
 }
 
 void PGparameter::bind(const int &value, const int pos)
