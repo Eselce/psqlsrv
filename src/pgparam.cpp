@@ -1,4 +1,6 @@
 
+#include <iostream>
+
 #include <cstring>
 
 #include "pg_type.h"
@@ -16,9 +18,15 @@ PGparameter::~PGparameter(void)
 
 void PGparameter::bindany(const void *value, const int pos, const Oid type, const int length, const DBparameterFormat format)
 {
+	if ((pos < 1) || (pos > this->m_nParams)) {
+		std::cerr << "Error in bindany(): Illegal index " << pos << "! Should be between 1 and " << this->m_nParams << "..." << std::endl;
+
+		return;
+	}
+
 	if (format == FORMAT_BINARY) {
 		// libpq handles binary data with big endian!
-		value = this->convertbigendian(value, length);
+		value = this->convertbigendian(value, length, pos);
 	}
 
 	DBparameter::bindany(value, pos, type, length, format);

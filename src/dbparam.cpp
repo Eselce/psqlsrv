@@ -15,6 +15,7 @@ DBparameter::DBparameter(const int nParams)
 	this->m_values = new const char *[nParams];
 	this->m_lengths = new int[nParams];
 	this->m_formats = new DBparameterFormat[nParams];
+	this->m_valbuffer = new int64_t[nParams];
 }
 
 DBparameter::~DBparameter(void)
@@ -23,6 +24,7 @@ DBparameter::~DBparameter(void)
 	delete[] this->m_values;
 	delete[] this->m_lengths;
 	delete[] this->m_formats;
+	delete[] this->m_valbuffer;
 
 #if defined(_DEBUG)
 	std::clog << "Deleted parameter arrays[" << this->m_nParams << "]: " << this << std::endl;
@@ -37,6 +39,7 @@ void DBparameter::resize(const int nParams)
 	delete[] this->m_values;
 	delete[] this->m_lengths;
 	delete[] this->m_formats;
+	delete[] this->m_valbuffer;
 
 #if defined(_DEBUG)
 	std::clog << "Deleted old parameter arrays: " << this << std::endl;
@@ -46,18 +49,26 @@ void DBparameter::resize(const int nParams)
 	this->m_values = new const char *[nParams];
 	this->m_lengths = new int[nParams];
 	this->m_formats = new DBparameterFormat[nParams];
+	this->m_valbuffer = new int64_t[nParams];
 
 #if defined(_DEBUG)
 	std::clog << "Resized parameter to " << nParams << " parameters: " << this << std::endl;
 #endif
 }
 
-void *DBparameter::convertbigendian(const void *value, const int length)
+void *DBparameter::convertbigendian(const void *value, const int length, const int pos)
 {
-	void *ret = const_cast<void *>(value);  // TODO: We may have to allocate memory here instead!
+	if ((pos < 1) || (pos > this->m_nParams)) {
+		std::cerr << "Error in convertbigendian(): Illegal index " << pos << "! Should be between 1 and " << this->m_nParams << "..." << std::endl;
+
+		return nullptr;
+	}
+
+	void *ret = (this->m_valbuffer + (pos - 1));  // use the reserved space in m_valbuffer for the binary data (not strings)
 
 	switch (length) {
-	case 1:	break;  // nothing to do
+	case 1:	*static_cast<char *>(ret) = *static_cast<const char *>(value);
+			break;  // unmodified
 	case 2:	*static_cast<int16_t *>(ret) = htobe16(*static_cast<const int16_t *>(value));
 			break;
 	case 4:	*static_cast<int32_t *>(ret) = htobe32(*static_cast<const int32_t *>(value));

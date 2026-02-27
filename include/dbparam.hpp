@@ -40,7 +40,7 @@ public:
 protected:
 	virtual void resize(const int nParams);
 
-	virtual void *convertbigendian(const void *value, const int length);
+	virtual void *convertbigendian(const void *value, const int length, const int pos = 1);
 
 	virtual void bindany(const void *value, const int pos, const DBparameterType type, const int length = 0, const DBparameterFormat format = FORMAT_BINARY);
 
@@ -54,5 +54,7 @@ protected:
 	int *m_lengths;
 
 	DBparameterFormat *m_formats;
+
+	int64_t *m_valbuffer;
 };
 
