@@ -93,6 +93,14 @@ void *DBparameter::convertbigendian(const void *value, const int length, const i
 	return ret;
 }
 
+void DBparameter::bind(void) {
+	int nParams = - this->m_nParams;
+
+	this->m_nParams = 0;
+
+	this->resize(nParams);
+}
+
 void DBparameter::bindany(const void *value, const int pos, const DBparameterType type, const int length, const DBparameterFormat format)
 {
 	if ((pos < 1) || (pos > this->m_nParams)) {
@@ -109,17 +117,32 @@ void DBparameter::bindany(const void *value, const int pos, const DBparameterTyp
 	this->m_formats[i] = format;
 }
 
-void DBparameter::bindvar(const int &value, const int pos)
+void DBparameter::bindvar(const signed int &value, const int pos)
 {
 	this->bindany(&value, pos, 1, sizeof(int), FORMAT_BINARY);
 }
 
-void DBparameter::bindvar(const short int &value, const int pos)
+void DBparameter::bindvar(const unsigned int &value, const int pos)
+{
+	this->bindany(&value, pos, 1, sizeof(int), FORMAT_BINARY);
+}
+
+void DBparameter::bindvar(const signed short int &value, const int pos)
 {
 	this->bindany(&value, pos, 2, sizeof(short int), FORMAT_BINARY);
 }
 
-void DBparameter::bindvar(const long int &value, const int pos)
+void DBparameter::bindvar(const unsigned short int &value, const int pos)
+{
+	this->bindany(&value, pos, 2, sizeof(short int), FORMAT_BINARY);
+}
+
+void DBparameter::bindvar(const signed long int &value, const int pos)
+{
+	this->bindany(&value, pos, 3, sizeof(long int), FORMAT_BINARY);
+}
+
+void DBparameter::bindvar(const unsigned long int &value, const int pos)
 {
 	this->bindany(&value, pos, 3, sizeof(long int), FORMAT_BINARY);
 }

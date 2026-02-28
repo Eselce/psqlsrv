@@ -1,6 +1,8 @@
 
 #pragma once
 
+#include <iostream>
+
 #include <string>
 
 #include "db_type.h"
@@ -13,11 +15,27 @@ public:
 	virtual ~DBparameter(void);
 
 public:
-	virtual void bindvar(const int &value, const int pos);
+	virtual void bind(void);
 
-	virtual void bindvar(const short int &value, const int pos);
+	template <typename T, typename... Args>
+	void bind(T value, Args... args) {
+		if (this->m_nParams > 0) {
+			std::cerr << "Error: Can't call bind() with memory allocated!" << std::endl;
+			return;
+		}
+		int pos = - (--this->m_nParams);
+    	this->bind(args...);
+		this->bindvar(value, pos);
+	};
 
-	virtual void bindvar(const long int &value, const int pos);
+	virtual void bindvar(const signed int &value, const int pos);
+	virtual void bindvar(const unsigned int &value, const int pos);
+
+	virtual void bindvar(const signed short int &value, const int pos);
+	virtual void bindvar(const unsigned short int &value, const int pos);
+
+	virtual void bindvar(const signed long int &value, const int pos);
+	virtual void bindvar(const unsigned long int &value, const int pos);
 
 	virtual void bindvar(const float &value, const int pos);
 

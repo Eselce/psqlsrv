@@ -13,11 +13,14 @@ public:
 	virtual ~PGparameter(void) override;
 
 public:
-	virtual void bindvar(const int &value, const int pos) override;
+	virtual void bindvar(const signed int &value, const int pos) override;
+	virtual void bindvar(const unsigned int &value, const int pos) override;
 
-	virtual void bindvar(const short int &value, const int pos) override;
+	virtual void bindvar(const signed short int &value, const int pos) override;
+	virtual void bindvar(const unsigned short int &value, const int pos) override;
 
-	virtual void bindvar(const long int &value, const int pos) override;
+	virtual void bindvar(const signed long int &value, const int pos) override;
+	virtual void bindvar(const unsigned long int &value, const int pos) override;
 
 	virtual void bindvar(const float &value, const int pos) override;
 

@@ -32,17 +32,32 @@ void PGparameter::bindany(const void *value, const int pos, const Oid type, cons
 	DBparameter::bindany(value, pos, type, length, format);
 }
 
-void PGparameter::bindvar(const int &value, const int pos)
+void PGparameter::bindvar(const signed int &value, const int pos)
 {
 	this->bindany(&value, pos, INT4OID, sizeof(int), FORMAT_BINARY);
 }
 
-void PGparameter::bindvar(const short int &value, const int pos)
+void PGparameter::bindvar(const unsigned int &value, const int pos)
+{
+	this->bindany(&value, pos, INT4OID, sizeof(int), FORMAT_BINARY);
+}
+
+void PGparameter::bindvar(const signed short int &value, const int pos)
 {
 	this->bindany(&value, pos, INT2OID, sizeof(short int), FORMAT_BINARY);
 }
 
-void PGparameter::bindvar(const long int &value, const int pos)
+void PGparameter::bindvar(const unsigned short int &value, const int pos)
+{
+	this->bindany(&value, pos, INT2OID, sizeof(short int), FORMAT_BINARY);
+}
+
+void PGparameter::bindvar(const signed long int &value, const int pos)
+{
+	this->bindany(&value, pos, INT8OID, sizeof(long int), FORMAT_BINARY);
+}
+
+void PGparameter::bindvar(const unsigned long int &value, const int pos)
 {
 	this->bindany(&value, pos, INT8OID, sizeof(long int), FORMAT_BINARY);
 }
