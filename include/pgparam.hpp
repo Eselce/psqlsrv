@@ -8,7 +8,12 @@
 class PGparameter : public DBparameter
 {
 public:
-	PGparameter(const int nParams = 0);
+	template <typename... Args>
+	PGparameter(Args... args)
+	:	DBparameter(args...)
+	{
+		this->bind(args...);
+	}
 
 	virtual ~PGparameter(void) override;
 
@@ -31,6 +36,8 @@ public:
 	virtual void bindvar(const char *value, const int pos) override;
 
 	virtual const Oid *types(void) const override;
+
+	virtual std::string to_string(void) const override;
 
 protected:
 	virtual void bindany(const void *value, const int pos, const Oid type, const int length = 0, const DBparameterFormat format = FORMAT_BINARY) override;
