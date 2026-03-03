@@ -212,7 +212,7 @@ const DBanswer *PGconnection::exec(const char *command, const DBparameter &param
 
 #if defined(_DEBUG)
     if (this->getVerbose()) {
-        std::clog << "Executing: " << command << " [" << param.count() << "] to " << resultFormat << std::endl;
+        std::clog << "Executing: " << command << " " << param.to_string() << " to " << resultFormat << std::endl;
     }
 #endif
 
@@ -254,7 +254,7 @@ const DBanswer *PGconnection::exec(const DBstatement *stmt, const DBparameter &p
     if (this->getVerbose()) {
 		std::string stmtText = ((stmt != nullptr) ? (" (" + std::string((stmt->getName() == nullptr) ? "null" : stmt->getName()) + ")") : " (null)");
 
-        std::clog << "Executing: " << stmt->getCommand() << stmtText << " [" << param.count() << "] to " << resultFormat << std::endl;
+        std::clog << "Executing: " << stmt->getCommand() << stmtText << " " << param.to_string() << " to " << resultFormat << std::endl;
     }
 #endif
 
@@ -296,7 +296,7 @@ DBrecordset *PGconnection::query(const char *command, const DBparameter &param, 
     if (this->getVerbose()) {
 		std::string stmtText = (" (" + std::string((stmtName == nullptr) ? "null" : stmtName) + ")");
 
-        std::clog << "Query: " << command << stmtText << " [" << param.count() << "]" << std::endl;
+        std::clog << "Query: " << command << stmtText << " " << param.to_string() << std::endl;
     }
 #endif
 
