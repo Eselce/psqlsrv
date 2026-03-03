@@ -49,13 +49,8 @@ int main(int argc, char **argv)
 
 		std::cout << "ANSWER: " << pg.getanswer("SELECT zahl, klein FROM test2 WHERE \"ID\" = 2;") << std::endl;
 
-		PGparameter parama(1);
-		PGparameter paramb(3);
-
-		parama.bindvar(2, 1);
-		paramb.bindvar("zahl", 1);
-		paramb.bindvar("klein", 2);
-		paramb.bindvar(2, 3);
+		PGparameter parama(2);
+		PGparameter paramb("zahl", "klein", 2);
 
 		std::cout << "ANSWER: " << pg.getanswer("SELECT zahl, klein FROM test2 WHERE \"ID\" = $1;", parama) << std::endl;
 
@@ -97,9 +92,7 @@ int main(int argc, char **argv)
 			std::cerr << "FAILED TO CREATE RECORDSET" << std::endl;
 		}
 
-		PGparameter paramc(1);
-
-		paramc.bindvar(50, 1);
+		PGparameter paramc((50);
 
 		recset = pg.query("SELECT * FROM test2 WHERE zahl > $1;", paramc);
 

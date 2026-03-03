@@ -21,9 +21,7 @@ test_poc::~test_poc(void)
 
 bool test_poc::classrun(PGconnection &pg, const char *command, const int arg) const {
     const char *stmtname = "mystat";
-    PGparameter param;
-
-    param.bind(arg);
+    PGparameter param(arg);
 
     DBrecordset *recset = pg.query(command, param, stmtname);
 
@@ -42,9 +40,7 @@ bool test_poc::autorun(PGconnection &pg, const char *command, const int arg) con
     const Oid paramTypes[] = { INT4OID };
     const int nParams = (sizeof(paramTypes) / sizeof(Oid));
     PGstatement stmt(&pg, command, nParams, paramTypes);
-    PGparameter param;
-
-    param.bind(arg);
+    PGparameter param(arg);
 
     stmt.setName(stmtname);
 
