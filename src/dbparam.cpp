@@ -198,9 +198,9 @@ std::string DBparameter::to_string(void) const
 	for (int i = 0; i < this->m_nParams; ++i) {
 		DBparameterType type = this->m_types[i];
 		const char *value = this->m_values[i];
-		const short int val2 = be16toh(*reinterpret_cast<const short int *>(value));
-		const int val4 = be32toh(*reinterpret_cast<const int *>(value));
-		const long int val8 = be64toh(*reinterpret_cast<const long int *>(value));
+		const short int val2 =	*reinterpret_cast<const short int *>(value);
+		const int val4 =		*reinterpret_cast<const int *>(value);
+		const long int val8 =	*reinterpret_cast<const long int *>(value);
 
 		if (i != 0) {
 			ret += ", ";

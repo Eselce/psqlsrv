@@ -92,7 +92,7 @@ int main(int argc, char **argv)
 			std::cerr << "FAILED TO CREATE RECORDSET" << std::endl;
 		}
 
-		PGparameter paramc((50);
+		PGparameter paramc(50);
 
 		recset = pg.query("SELECT * FROM test2 WHERE zahl > $1;", paramc);
 
