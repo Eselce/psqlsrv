@@ -7,17 +7,6 @@
 
 #include "dbparam.hpp"
 
-DBparameter::DBparameter(const int nParams)
-:	m_nParams(0),
-	m_types(nullptr),
-	m_values(nullptr),
-	m_lengths(nullptr),
-	m_formats(nullptr),
-	m_valbuffer(nullptr)
-{
-	this->resize(nParams);
-}
-
 DBparameter::~DBparameter(void)
 {
 	this->resize(0);  // cleanup
@@ -117,44 +106,53 @@ void DBparameter::bindany(const void *value, const int pos, const DBparameterTyp
 	this->m_formats[i] = format;
 }
 
+void DBparameter::bindbase(const void *value, const int pos, const DBparameterType type, const int length, const DBparameterFormat format)
+{
+#if defined(_DEBUG)
+    std::clog << "Warning! Called bindany() in base parameter class: " << this << std::endl;
+#endif
+
+	this->bindany(value, pos, type, length, format);
+}
+
 void DBparameter::bindvar(const signed int &value, const int pos)
 {
-	this->bindany(&value, pos, 1, sizeof(int), FORMAT_BINARY);
+	this->bindbase(&value, pos, 1, sizeof(int), FORMAT_BINARY);
 }
 
 void DBparameter::bindvar(const unsigned int &value, const int pos)
 {
-	this->bindany(&value, pos, 1, sizeof(int), FORMAT_BINARY);
+	this->bindbase(&value, pos, 1, sizeof(int), FORMAT_BINARY);
 }
 
 void DBparameter::bindvar(const signed short int &value, const int pos)
 {
-	this->bindany(&value, pos, 2, sizeof(short int), FORMAT_BINARY);
+	this->bindbase(&value, pos, 2, sizeof(short int), FORMAT_BINARY);
 }
 
 void DBparameter::bindvar(const unsigned short int &value, const int pos)
 {
-	this->bindany(&value, pos, 2, sizeof(short int), FORMAT_BINARY);
+	this->bindbase(&value, pos, 2, sizeof(short int), FORMAT_BINARY);
 }
 
 void DBparameter::bindvar(const signed long int &value, const int pos)
 {
-	this->bindany(&value, pos, 3, sizeof(long int), FORMAT_BINARY);
+	this->bindbase(&value, pos, 3, sizeof(long int), FORMAT_BINARY);
 }
 
 void DBparameter::bindvar(const unsigned long int &value, const int pos)
 {
-	this->bindany(&value, pos, 3, sizeof(long int), FORMAT_BINARY);
+	this->bindbase(&value, pos, 3, sizeof(long int), FORMAT_BINARY);
 }
 
 void DBparameter::bindvar(const float &value, const int pos)
 {
-	this->bindany(&value, pos, 4, sizeof(float), FORMAT_BINARY);
+	this->bindbase(&value, pos, 4, sizeof(float), FORMAT_BINARY);
 }
 
 void DBparameter::bindvar(const double &value, const int pos)
 {
-	this->bindany(&value, pos, 5, sizeof(double), FORMAT_BINARY);
+	this->bindbase(&value, pos, 5, sizeof(double), FORMAT_BINARY);
 }
 
 void DBparameter::bindvar(const std::string &value, const int pos)
@@ -164,7 +162,7 @@ void DBparameter::bindvar(const std::string &value, const int pos)
 
 void DBparameter::bindvar(const char *value, const int pos)
 {
-	this->bindany(value, pos, 6, std::strlen(value), FORMAT_TEXT);
+	this->bindbase(value, pos, 6, std::strlen(value), FORMAT_TEXT);
 }
 
 int DBparameter::count(void) const
@@ -191,5 +189,34 @@ const int *DBparameter::formats(void) const
 {
 	// This is a bit hacky, but it allows us to return the formats as an array of ints, which is what the DBparameterFormat enum is.
 	return reinterpret_cast<int *>(this->m_formats);
+}
+
+std::string DBparameter::to_string(void) const
+{
+	std::string ret = std::string("[") + std::to_string(this->m_nParams) + "](";
+
+	for (int i = 0; i < this->m_nParams; ++i) {
+		DBparameterType type = this->m_types[i];
+		const char *value = this->m_values[i];
+		const short int val2 = be16toh(*reinterpret_cast<const short int *>(value));
+		const int val4 = be32toh(*reinterpret_cast<const int *>(value));
+		const long int val8 = be64toh(*reinterpret_cast<const long int *>(value));
+
+		if (i != 0) {
+			ret += ", ";
+		}
+		switch (type) {
+		case 1:	ret += std::to_string(static_cast<int>(val4)); break;
+		case 2:	ret += std::to_string(static_cast<short int>(val2)) + "h"; break;
+		case 3:	ret += std::to_string(static_cast<long int>(val8)) + "l"; break;
+		case 4:	ret += std::to_string(*reinterpret_cast<const float *>(&val4)) + "f"; break;
+		case 5:	ret += std::to_string(*reinterpret_cast<const double *>(&val8)) + "Lf"; break;
+		case 6:	ret = ret + "\"" + value + "\""; break;
+		default:ret = ret + "#" + std::to_string(type) + "#"; break;
+		}
+	}
+	ret += ")";
+
+	return ret;
 }
 

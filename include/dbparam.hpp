@@ -10,7 +10,18 @@
 class DBparameter
 {
 public:
-	DBparameter(const int nParams = 0);
+	template <typename... Args>
+	DBparameter([[maybe_unused]] Args... args)
+	:	m_nParams(0),
+		m_types(nullptr),
+		m_values(nullptr),
+		m_lengths(nullptr),
+		m_formats(nullptr),
+		m_valbuffer(nullptr)
+	{
+		// This has to reside in the derived class, as the object is not yet fully established!
+		//this->bind(args...);
+	}
 
 	virtual ~DBparameter(void);
 
@@ -55,12 +66,16 @@ public:
 
 	virtual const int *formats(void) const;
 
+	virtual std::string to_string(void) const;
+
 protected:
 	virtual void resize(const int nParams);
 
 	virtual void *convertbigendian(const void *value, const int length, const int pos = 1);
 
 	virtual void bindany(const void *value, const int pos, const DBparameterType type, const int length = 0, const DBparameterFormat format = FORMAT_BINARY);
+
+	virtual void bindbase(const void *value, const int pos, const DBparameterType type, const int length = 0, const DBparameterFormat format = FORMAT_BINARY);
 
 protected:
 	int m_nParams;
