@@ -49,6 +49,8 @@ protected:
 
 	virtual void cleanFieldInfos(void);
 
+	virtual DBparameter *getParam(void);
+
 protected:
 	DBconnection *m_pConn;
 

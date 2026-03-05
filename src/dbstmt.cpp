@@ -143,13 +143,24 @@ void DBstatement::cleanFieldInfos(void)
 	}
 }
 
+DBparameter *DBstatement::getParam(void)
+{
+	return nullptr;
+}
+
 const DBanswer *DBstatement::exec(const char *errmsg, const DBparameterFormat resultFormat)
 {
 	const DBanswer *ret = nullptr;
 
 	if (this->m_isprepared) {
 		if (this->m_pConn != nullptr) {
-			ret = this->m_pConn->exec(this, errmsg, resultFormat);
+			DBparameter *pParam = this->getParam();
+
+			if (pParam == nullptr) {
+				ret = this->m_pConn->exec(this, errmsg, resultFormat);
+			} else {
+				ret = this->m_pConn->exec(this, *pParam, errmsg, resultFormat);
+			}
 		}
 	}
 
