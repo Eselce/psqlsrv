@@ -9,12 +9,25 @@ const std::string PGstatement::m_autoname_prefix = "stmt_";
 int PGstatement::m_autoname_index = 0;
 
 PGstatement::PGstatement(DBconnection *conn, const std::string &command, const int nParams, const DBparameterType *paramTypes)
-:	DBstatement(conn, command, nParams, paramTypes)
+:	DBstatement(conn, command, nParams, paramTypes),
+	m_pRes(nullptr),
+	m_pParam(nullptr)
 {
 }
 
 PGstatement::~PGstatement(void)
 {
+	if (m_pParam != nullptr) {
+		DBparameter *pParam = m_pParam;
+
+#if defined(_DEBUG)
+		std::clog << "Cleared parameter " << pParam->to_string() << " for: " << this << std::endl;
+		m_pParam = nullptr;
+#endif
+
+		delete pParam;
+	}
+
 	if (m_pRes != nullptr) {
 		PQclear(m_pRes);
 
@@ -195,5 +208,10 @@ void PGstatement::calcFieldInfos(void)
 		m_pRes = nullptr;
 #endif
 	}
+}
+
+DBparameter *PGstatement::getParam(void)
+{
+	return this->m_pParam;
 }
 
