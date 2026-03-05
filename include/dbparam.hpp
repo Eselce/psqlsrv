@@ -35,7 +35,7 @@ public:
 			return;
 		}
 		int pos = - (--this->m_nParams);
-    	this->bind(args...);
+		this->bind(args...);
 		this->bindvar(value, pos);
 	};
 

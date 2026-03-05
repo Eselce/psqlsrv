@@ -136,11 +136,11 @@ std::string HTTPserver::testhandler(const httplib::Request &req)
 	// req.method			- GET
 	// req.version			- HTTP/1.1
 	// req.matched_route	- /dyn.*
-	// req.target           - /dynamisch?test=4
+	// req.target			- /dynamisch?test=4
 	// req.path				- /dynamisch
-	// req.body		        - (empty)
-	// User-Agent: 			- Mozilla/5.0 (X11; Linux x86_64; rv:147.0) Gecko/20100101 Firefox/147.0
-	// Accept: 				- text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
+	// req.body				- (empty)
+	// User-Agent:			- Mozilla/5.0 (X11; Linux x86_64; rv:147.0) Gecko/20100101 Firefox/147.0
+	// Accept:				- text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
 	// test (param):		- 4
 	// test (header):		- 0 (empty)
 	// test (param):		- 1 (4)

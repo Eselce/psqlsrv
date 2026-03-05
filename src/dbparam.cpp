@@ -109,7 +109,7 @@ void DBparameter::bindany(const void *value, const int pos, const DBparameterTyp
 void DBparameter::bindbase(const void *value, const int pos, const DBparameterType type, const int length, const DBparameterFormat format)
 {
 #if defined(_DEBUG)
-    std::clog << "Warning! Called bindany() in base parameter class: " << this << std::endl;
+	std::clog << "Warning! Called bindany() in base parameter class: " << this << std::endl;
 #endif
 
 	this->bindany(value, pos, type, length, format);

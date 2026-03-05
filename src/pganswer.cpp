@@ -13,14 +13,14 @@ PGanswer::PGanswer(PGresult *res)
 
 PGanswer::~PGanswer(void)
 {
-    if (m_pRes != nullptr) {
-        PQclear(m_pRes);
+	if (m_pRes != nullptr) {
+		PQclear(m_pRes);
 
 #if defined(_DEBUG)
 		std::clog << "Cleared result: " << this << std::endl;
 		m_pRes = nullptr;
 #endif
-    }
+	}
 }
 
 std::string PGanswer::getanswer(const DBparameterFormat resultFormat) const
@@ -29,7 +29,7 @@ std::string PGanswer::getanswer(const DBparameterFormat resultFormat) const
 	std::string answer = "";
 
 #if defined(_DEBUG)
-    std::clog << "getanswer() got status: " << status << " [" << ExecStatusTypeName[status] << "]" << std::endl;
+	std::clog << "getanswer() got status: " << status << " [" << ExecStatusTypeName[status] << "]" << std::endl;
 #endif
 
 	if (status == PGRES_TUPLES_OK) {

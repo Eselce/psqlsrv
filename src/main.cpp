@@ -9,16 +9,16 @@
 int main(int argc, char **argv)
 {
 #if defined(_START_HTTP_SERVER_MAIN)
-	bool           ok       = false;
+	bool			 ok		= false;
 #else
-	bool           ok       = true;
+	bool			 ok		= true;
 #endif
 
 #if defined(_START_PG_CONNECTION_MAIN)
 	std::cout << "STARTING POSTGRESQL CONNECTION" << std::endl;
 
-	const char    *conninfo;
-	PGconnection   pg;
+	const char		*conninfo;
+	PGconnection	 pg;
 
 	if (argc > 1) {
 		conninfo = argv[1];

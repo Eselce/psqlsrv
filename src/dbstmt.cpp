@@ -6,9 +6,9 @@
 DBstatement::DBstatement(DBconnection *conn, const std::string &command, const int nParams, const DBparameterType *paramTypes)
 :	m_pConn(conn),
 	m_name(this->getautoname()),
-    m_command(command),
-    m_nParams(nParams),
-    m_paramTypes(paramTypes),
+	m_command(command),
+	m_nParams(nParams),
+	m_paramTypes(paramTypes),
 	m_isprepared(false),
 	m_nFields(0),
 	m_fieldTypes(nullptr),
@@ -32,7 +32,7 @@ void DBstatement::setName(const char *name)
 
 std::string DBstatement::getautoname(void) const
 {
-    return "stmt_" + std::to_string(reinterpret_cast<std::uintptr_t>(this));
+	return "stmt_" + std::to_string(reinterpret_cast<std::uintptr_t>(this));
 }
 
 const char *DBstatement::getName(void) const
@@ -131,7 +131,8 @@ void DBstatement::calcFieldInfos(void)
 	// Default implementation does nothing, but derived classes can override this to calculate infos after preparation of the statement on the connection.
 }
 
-void DBstatement::cleanFieldInfos(void) {
+void DBstatement::cleanFieldInfos(void)
+{
 	// Default frees the statement in the database, but derived classes can override this but should call this to prepare the statement on the connection.
 	if (this->m_isprepared) {
 		if (this->m_pConn != nullptr) {
@@ -167,5 +168,4 @@ const DBanswer *DBstatement::exec(const DBparameter &param, const char *errmsg, 
 
 	return ret;
 }
-
 
