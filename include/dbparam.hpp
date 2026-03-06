@@ -7,6 +7,27 @@
 
 #include "db_type.h"
 
+typedef union element
+{
+	signed int s_int;
+	unsigned int u_int;
+	int m_int;
+
+	signed short int s_short;
+	unsigned short int u_short;
+	short int m_short;
+
+	signed long int s_long;
+	unsigned long int u_long;
+	long int m_long;
+
+	float m_float;
+
+	double m_double;
+
+	char m_char;
+} parameter;
+
 class DBparameter
 {
 public:
@@ -39,22 +60,24 @@ public:
 		this->bindvar(value, pos);
 	};
 
-	virtual void bindvar(const signed int &value, const int pos);
-	virtual void bindvar(const unsigned int &value, const int pos);
+	virtual int parse(const char *str = nullptr, const char delim = ',');
 
-	virtual void bindvar(const signed short int &value, const int pos);
-	virtual void bindvar(const unsigned short int &value, const int pos);
+	virtual int parsevar(const signed int &value, const int pos, const char *str = nullptr);
+	virtual int parsevar(const unsigned int &value, const int pos, const char *str = nullptr);
 
-	virtual void bindvar(const signed long int &value, const int pos);
-	virtual void bindvar(const unsigned long int &value, const int pos);
+	virtual int parsevar(const signed short int &value, const int pos, const char *str = nullptr);
+	virtual int parsevar(const unsigned short int &value, const int pos, const char *str = nullptr);
 
-	virtual void bindvar(const float &value, const int pos);
+	virtual int parsevar(const signed long int &value, const int pos, const char *str = nullptr);
+	virtual int parsevar(const unsigned long int &value, const int pos, const char *str = nullptr);
 
-	virtual void bindvar(const double &value, const int pos);
+	virtual int parsevar(const float &value, const int pos, const char *str = nullptr);
 
-	virtual void bindvar(const std::string &value, const int pos);
+	virtual int parsevar(const double &value, const int pos, const char *str = nullptr);
 
-	virtual void bindvar(const char *value, const int pos);
+	virtual int parsevar(const std::string &value, const int pos, const char *str = nullptr);
+
+	virtual int parsevar(const char *value, const int pos, const char *str = nullptr);
 
 	virtual int count(void) const;
 
@@ -76,6 +99,23 @@ protected:
 	virtual void bindany(const void *value, const int pos, const DBparameterType type, const int length = 0, const DBparameterFormat format = FORMAT_BINARY);
 
 	virtual void bindbase(const void *value, const int pos, const DBparameterType type, const int length = 0, const DBparameterFormat format = FORMAT_BINARY);
+
+	virtual void bindvar(const signed int &value, const int pos);
+	virtual void bindvar(const unsigned int &value, const int pos);
+
+	virtual void bindvar(const signed short int &value, const int pos);
+	virtual void bindvar(const unsigned short int &value, const int pos);
+
+	virtual void bindvar(const signed long int &value, const int pos);
+	virtual void bindvar(const unsigned long int &value, const int pos);
+
+	virtual void bindvar(const float &value, const int pos);
+
+	virtual void bindvar(const double &value, const int pos);
+
+	virtual void bindvar(const std::string &value, const int pos);
+
+	virtual void bindvar(const char *value, const int pos);
 
 protected:
 	int m_nParams;

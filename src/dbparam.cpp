@@ -82,12 +82,67 @@ void *DBparameter::convertbigendian(const void *value, const int length, const i
 	return ret;
 }
 
-void DBparameter::bind(void) {
+void DBparameter::bind(void)
+{
 	int nParams = - this->m_nParams;
 
 	this->m_nParams = 0;
 
 	this->resize(nParams);
+}
+
+int DBparameter::parse(const char *str, const char delim)
+{
+	int p = 0;
+
+	if (str == nullptr) {
+		std::cerr << "DBparameter::parse(): Parsing null string!" << std::endl;
+
+		return p;
+	}
+
+	for (int i = 0, pos = i + 1; i < this->m_nParams; ++i, ++pos) {
+		DBparameterType type = this->m_types[i];
+		const char *valuechar = (str + p);
+		const parameter *value = reinterpret_cast<const parameter *>(valuechar);
+		int len;
+
+		switch (type) {
+		case 1:	len = this->parsevar(value->m_int, pos, valuechar); break;
+		case 2:	len = this->parsevar(value->m_short, pos, valuechar); break;
+		case 3:	len = this->parsevar(value->m_long, pos, valuechar); break;
+		case 4:	len = this->parsevar(value->m_float, pos, valuechar); break;
+		case 5:	len = this->parsevar(value->m_double, pos, valuechar); break;
+		case 6:	len = this->parsevar(valuechar, pos, valuechar); break;
+		default:len = 0; std::cerr << "#" << std::to_string(type) << "#" << std::endl; break;
+		}
+
+		const char *chardelim = ((pos < this->m_nParams) ? std::strchr(valuechar + len, delim)  // find delimiter
+															: (valuechar + std::strlen(valuechar)));
+
+		if (chardelim != nullptr) {
+#if defined(_DEBUG)
+			const char *charrest = valuechar + len;
+			int restlen = (chardelim - charrest);
+			if (restlen > 0) {
+				char buffer[restlen + 1];
+				const char *rest = std::strncpy(buffer, charrest, restlen);
+
+				buffer[restlen] = '\0';
+
+				std::clog << "Warning in parse(): Found \"" << rest << "\" after parameter " << pos << std::endl;
+			}
+#endif
+
+			p = (chardelim - str) + 1;
+		} else {
+			std::cerr << "Could not find \"" << delim << "\" after position " << (p + len) << ": " << (valuechar + len) << std::endl;
+
+			p += len;
+		}
+	}
+
+	return p;
 }
 
 void DBparameter::bindany(const void *value, const int pos, const DBparameterType type, const int length, const DBparameterFormat format)
@@ -165,6 +220,149 @@ void DBparameter::bindvar(const char *value, const int pos)
 	this->bindbase(value, pos, 6, std::strlen(value), FORMAT_TEXT);
 }
 
+int DBparameter::parsevar(const signed int &value, const int pos, const char *str)
+{
+	std::size_t len = 0;
+
+	if (str != nullptr) {
+		const signed int val = std::stoi(std::string(str), &len, 10);
+
+		this->bindbase(&val, pos, 1, sizeof(int), FORMAT_BINARY);
+	} else {
+		this->bindbase(&value, pos, 1, sizeof(int), FORMAT_BINARY);
+	}
+
+	return len;
+}
+
+int DBparameter::parsevar(const unsigned int &value, const int pos, const char *str)
+{
+	std::size_t len = 0;
+
+	if (str != nullptr) {
+		const unsigned int val = std::stoi(std::string(str), &len, 10);
+
+		this->bindbase(&val, pos, 1, sizeof(int), FORMAT_BINARY);
+	} else {
+		this->bindbase(&value, pos, 1, sizeof(int), FORMAT_BINARY);
+	}
+
+	return len;
+}
+
+int DBparameter::parsevar(const signed short int &value, const int pos, const char *str)
+{
+	std::size_t len = 0;
+
+	if (str != nullptr) {
+		const signed short int val = std::stoi(std::string(str), &len, 10);
+
+		this->bindbase(&val, pos, 2, sizeof(short int), FORMAT_BINARY);
+	} else {
+		this->bindbase(&value, pos, 2, sizeof(short int), FORMAT_BINARY);
+	}
+
+	return len;
+}
+
+int DBparameter::parsevar(const unsigned short int &value, const int pos, const char *str)
+{
+	std::size_t len = 0;
+
+	if (str != nullptr) {
+		const unsigned short int val = std::stoi(std::string(str), &len, 10);
+
+		this->bindbase(&val, pos, 2, sizeof(short int), FORMAT_BINARY);
+	} else {
+		this->bindbase(&value, pos, 2, sizeof(short int), FORMAT_BINARY);
+	}
+
+	return len;
+}
+
+int DBparameter::parsevar(const signed long int &value, const int pos, const char *str)
+{
+	std::size_t len = 0;
+
+	if (str != nullptr) {
+		const signed long int val = std::stol(str, &len);
+
+		this->bindbase(&val, pos, 3, sizeof(long int), FORMAT_BINARY);
+	} else {
+		this->bindbase(&value, pos, 3, sizeof(long int), FORMAT_BINARY);
+	}
+
+	return len;
+}
+
+int DBparameter::parsevar(const unsigned long int &value, const int pos, const char *str)
+{
+	std::size_t len = 0;
+
+	if (str != nullptr) {
+		const unsigned long int val = std::stol(str, &len);
+
+		this->bindbase(&val, pos, 3, sizeof(long int), FORMAT_BINARY);
+	} else {
+		this->bindbase(&value, pos, 3, sizeof(long int), FORMAT_BINARY);
+	}
+
+	return len;
+}
+
+int DBparameter::parsevar(const float &value, const int pos, const char *str)
+{
+	std::size_t len = 0;
+
+	if (str != nullptr) {
+		const float val = std::stof(str, &len);
+
+		this->bindbase(&val, pos, 4, sizeof(float), FORMAT_BINARY);
+	} else {
+		this->bindbase(&value, pos, 4, sizeof(float), FORMAT_BINARY);
+	}
+
+	return len;
+}
+
+int DBparameter::parsevar(const double &value, const int pos, const char *str)
+{
+	std::size_t len = 0;
+
+	if (str != nullptr) {
+		const double val = std::stod(str, &len);
+
+		this->bindbase(&val, pos, 5, sizeof(double), FORMAT_BINARY);
+	} else {
+		this->bindbase(&value, pos, 5, sizeof(double), FORMAT_BINARY);
+	}
+
+	return len;
+}
+
+int DBparameter::parsevar(const std::string &value, const int pos, const char *str)
+{
+	return this->parsevar(value.c_str(), pos, str);
+}
+
+int DBparameter::parsevar(const char *value, const int pos, const char *str)
+{
+	const char *val = ((str != nullptr) ? str : value);
+
+	if (val == nullptr) {
+		std::cerr << "DBparameter::parse(): Parsing null string!" << std::endl;
+
+		return 0;
+	} else {
+		std::size_t len = std::strlen(val);
+
+		this->bindbase(val, pos, 6, len, FORMAT_TEXT);
+
+		return len;
+	}
+
+}
+
 int DBparameter::count(void) const
 {
 	return this->m_nParams;
@@ -197,21 +395,20 @@ std::string DBparameter::to_string(void) const
 
 	for (int i = 0; i < this->m_nParams; ++i) {
 		DBparameterType type = this->m_types[i];
-		const char *value = this->m_values[i];
-		const short int val2 =	*reinterpret_cast<const short int *>(value);
-		const int val4 =		*reinterpret_cast<const int *>(value);
-		const long int val8 =	*reinterpret_cast<const long int *>(value);
+		const char *valuechar = this->m_values[i];
+		const parameter *value = reinterpret_cast<const parameter *>(valuechar);
 
 		if (i != 0) {
 			ret += ", ";
 		}
+
 		switch (type) {
-		case 1:	ret += std::to_string(static_cast<int>(val4)); break;
-		case 2:	ret += std::to_string(static_cast<short int>(val2)) + "h"; break;
-		case 3:	ret += std::to_string(static_cast<long int>(val8)) + "l"; break;
-		case 4:	ret += std::to_string(*reinterpret_cast<const float *>(&val4)) + "f"; break;
-		case 5:	ret += std::to_string(*reinterpret_cast<const double *>(&val8)) + "Lf"; break;
-		case 6:	ret = ret + "\"" + value + "\""; break;
+		case 1:	ret += std::to_string(value->m_int); break;
+		case 2:	ret += std::to_string(value->m_short) + "h"; break;
+		case 3:	ret += std::to_string(value->m_long) + "l"; break;
+		case 4:	ret += std::to_string(value->m_float) + "f"; break;
+		case 5:	ret += std::to_string(value->m_double) + "Lf"; break;
+		case 6:	ret = ret + "\"" + valuechar + "\""; break;
 		default:ret = ret + "#" + std::to_string(type) + "#"; break;
 		}
 	}

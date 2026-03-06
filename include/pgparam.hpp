@@ -18,6 +18,32 @@ public:
 	virtual ~PGparameter(void) override;
 
 public:
+	virtual int parse(const char *str = nullptr, const char delim = ',') override;
+
+	virtual int parsevar(const signed int &value, const int pos, const char *str = nullptr) override;
+	virtual int parsevar(const unsigned int &value, const int pos, const char *str = nullptr) override;
+
+	virtual int parsevar(const signed short int &value, const int pos, const char *str = nullptr) override;
+	virtual int parsevar(const unsigned short int &value, const int pos, const char *str = nullptr) override;
+
+	virtual int parsevar(const signed long int &value, const int pos, const char *str = nullptr) override;
+	virtual int parsevar(const unsigned long int &value, const int pos, const char *str = nullptr) override;
+
+	virtual int parsevar(const float &value, const int pos, const char *str = nullptr) override;
+
+	virtual int parsevar(const double &value, const int pos, const char *str = nullptr) override;
+
+	virtual int parsevar(const std::string &value, const int pos, const char *str = nullptr) override;
+
+	virtual int parsevar(const char *value, const int pos, const char *str = nullptr) override;
+
+	virtual const Oid *types(void) const override;
+
+	virtual std::string to_string(void) const override;
+
+protected:
+	virtual void bindany(const void *value, const int pos, const Oid type, const int length = 0, const DBparameterFormat format = FORMAT_BINARY) override;
+
 	virtual void bindvar(const signed int &value, const int pos) override;
 	virtual void bindvar(const unsigned int &value, const int pos) override;
 
@@ -34,13 +60,6 @@ public:
 	virtual void bindvar(const std::string &value, const int pos) override;
 
 	virtual void bindvar(const char *value, const int pos) override;
-
-	virtual const Oid *types(void) const override;
-
-	virtual std::string to_string(void) const override;
-
-protected:
-	virtual void bindany(const void *value, const int pos, const Oid type, const int length = 0, const DBparameterFormat format = FORMAT_BINARY) override;
 
 protected:
 };
