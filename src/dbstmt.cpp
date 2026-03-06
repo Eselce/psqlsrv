@@ -21,6 +21,11 @@ DBstatement::~DBstatement(void)
 	this->resize(0);  // cleanup
 }
 
+bool DBstatement::clearresult(void)
+{
+	return true;
+}
+
 void DBstatement::setName(const char *name)
 {
 	this->resize(this->m_nFields);  // cleanup
@@ -71,8 +76,9 @@ void DBstatement::resize(int nFields)
 #if defined(_DEBUG)
 		std::clog << "Deleted old field info arrays in statement " << this->getName() << ": " << this << std::endl;
 #endif
-	}
 
+		this->clearresult();  // if necessary, generally not!
+	}
 
 	this->m_nFields = nFields;
 

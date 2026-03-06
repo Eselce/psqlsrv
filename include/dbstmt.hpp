@@ -49,6 +49,8 @@ protected:
 
 	virtual void cleanFieldInfos(void);
 
+	virtual bool clearresult(void);
+
 	virtual DBparameter *getParam(void);
 
 protected:

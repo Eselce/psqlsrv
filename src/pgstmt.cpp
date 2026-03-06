@@ -29,12 +29,28 @@ PGstatement::~PGstatement(void)
 	}
 
 	if (m_pRes != nullptr) {
-		PQclear(m_pRes);
+
+		std::cerr << "Warning: Uncleared result in^ statement " << this->getName() << ": " << this << std::endl;
+
+		this->clearresult();
+	}
+}
+
+bool PGstatement::clearresult(void)
+{
+	if (m_pRes != nullptr) {
 
 #if defined(_DEBUG)
-		std::clog << "Cleared prepared statement " << this->getName() << ": " << this << std::endl;
-		m_pRes = nullptr;
+		PQclear(m_pRes);
+
+		std::clog << "Cleared result: " << this << std::endl;
 #endif
+
+		m_pRes = nullptr;
+
+		return DBstatement::clearresult();
+	} else {
+		return false;
 	}
 }
 
@@ -72,11 +88,7 @@ int PGstatement::getFieldNumber([[maybe_unused]] const std::string fieldName) co
 
 	field = PQfnumber(m_pRes, fieldName.c_str());
 
-#if defined(_DEBUG)
-		PQclear(m_pRes);
-
-		m_pRes = nullptr;
-#endif
+	this->clearresult();
 */
 
 	return (field + 1);  // Adjust for 1-based indexing
@@ -119,11 +131,9 @@ void PGstatement::prepare(void)
 		}
 
 		this->m_pConn->printerror();
-
-		PQclear(m_pRes);
-
-		m_pRes = nullptr;
 #endif
+
+		this->clearresult();
 
 		DBstatement::prepare();  // Base class, triggers calcFieldInfos()...
 	}
@@ -202,11 +212,7 @@ void PGstatement::calcFieldInfos(void)
 		}
 #endif
 
-		PQclear(m_pRes);
-
-#if defined(_DEBUG)
-		m_pRes = nullptr;
-#endif
+		this->clearresult();
 	}
 }
 

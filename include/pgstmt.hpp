@@ -34,6 +34,8 @@ public:
 protected:
 	virtual void calcFieldInfos(void) override;
 
+	virtual bool clearresult(void) override;
+
 	virtual DBparameter *getParam(void) override;
 
 protected:
