@@ -18,6 +18,7 @@ PGanswer::~PGanswer(void)
 
 #if defined(_DEBUG)
 		std::clog << "Cleared result: " << this << std::endl;
+
 		m_pRes = nullptr;
 #endif
 	}

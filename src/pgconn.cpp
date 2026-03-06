@@ -305,7 +305,7 @@ DBrecordset *PGconnection::query(const char *command, const DBparameter &param, 
 	return recset;
 }
 
-const DBanswer *PGconnection::checkresult(PGresult *res, const char *funName, const char *logmsg, const char *errmsg)
+const DBanswer *PGconnection::checkresult(PGresult *res, [[maybe_unused]] const char *funName, [[maybe_unused]] const char *logmsg, const char *errmsg)
 {
 	ExecStatusType status = PQresultStatus(res);
 
