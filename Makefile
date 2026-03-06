@@ -58,6 +58,7 @@ test_exe   := tests
 test_main  := test_dummy.cpp
 test_cpp   := \
 	      test_poc.cpp \
+	      test_param.cpp \
 # EOL test source files
 
 # server dependency on $(DBINC)
