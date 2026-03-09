@@ -212,7 +212,7 @@ const DBanswer *PGconnection::exec(const char *command, const DBparameter &param
 
 #if defined(_DEBUG)
 	if (this->getVerbose()) {
-		std::clog << "Executing: " << command << " " << param.to_string() << " to " << resultFormat << std::endl;
+		std::clog << "Executing: " << command << " " << param.to_string() << " to " << DBparameterFormatName[resultFormat] << std::endl;
 	}
 #endif
 
@@ -254,7 +254,7 @@ const DBanswer *PGconnection::exec(const DBstatement *stmt, const DBparameter &p
 	if (this->getVerbose()) {
 		std::string stmtText = ((stmt != nullptr) ? (" (" + std::string((stmt->getName() == nullptr) ? "null" : stmt->getName()) + ")") : " (null)");
 
-		std::clog << "Executing: " << stmt->getCommand() << stmtText << " " << param.to_string() << " to " << resultFormat << std::endl;
+		std::clog << "Executing: " << stmt->getCommand() << stmtText << " " << param.to_string() << " to " << DBparameterFormatName[resultFormat] << std::endl;
 	}
 #endif
 
@@ -348,12 +348,29 @@ std::string PGconnection::geterrorstring(void) const
 
 void PGconnection::freestmt(const char *stmtname)
 {
-	// Freeing statement quick and dirty, there may be no API function for it...
+#if defined(LIBPQ_HAS_PQCLOSEPREPARED)
+
+	// Okay, there's a direct statement to do this...
+#if defined(_ASYNC_FREESTMT)
+	PGresult *res = PQsendClosePrepared(this->getPGconn(), stmtName);
+#else
+	PGresult *res = PQclosePrepared(this->getPGconn(), stmtName);
+#endif
+
+	DBanswer *answ = this->checkresult(res, "PQclosePrepared", "Execute release of statement (status)", cmdErrorMsg);
+
+	this->getanswer(answ);
+
+#else
+
+	// Freeing statement quick and dirty, there may be no API function for it... (Edit: Obviously there is!)
 	std::string deallocate = "DEALLOCATE PREPARE ";
 
 	deallocate += stmtname;
 
-	this->getanswer(deallocate.c_str()); 
+	this->getanswer(deallocate.c_str());
+
+#endif
 }
 
 void PGconnection::dumpoptions(void) const
