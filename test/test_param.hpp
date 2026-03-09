@@ -14,6 +14,10 @@ public:
 	virtual bool run(void);
 
 protected:
-	virtual bool classrun(PGconnection &pg, const char *command, const int arg) const;
+	virtual bool paramrun(PGconnection &pg, const char *command, const int arg) const;
+
+	virtual bool selectemptyrun(PGconnection &pg, const char *command, const int arg) const;
+
+	virtual bool insertrun(PGconnection &pg, const char *command, const int arg) const;
 };
 
