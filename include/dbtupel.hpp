@@ -55,6 +55,6 @@ protected:
 
 	DBparameterFormat *m_formats;
 
-	int64_t *m_valbuffer;
+	PARAMETER *m_valbuffer;
 };
 

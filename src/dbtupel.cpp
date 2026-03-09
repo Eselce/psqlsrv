@@ -58,7 +58,7 @@ void DBtupel::resize(const int nFields)
 		this->m_values = new const char *[nFields];
 		this->m_lengths = new int[nFields];
 		this->m_formats = new DBparameterFormat[nFields];
-		this->m_valbuffer = new int64_t[nFields];
+		this->m_valbuffer = new PARAMETER[nFields];
 
 #if defined(_DEBUG)
 		std::clog << "Resized tupel to " << this->m_nFields << " columns: " << this << std::endl;
@@ -85,7 +85,9 @@ void *DBtupel::convertlittleendian(const void *value, const int length, const in
 			break;
 	case 8:	*static_cast<int64_t *>(ret) = be64toh(*static_cast<const int64_t *>(value));
 			break;
-	default: ret = nullptr;
+	case 16:*static_cast<__int128_t *>(ret) = __swap128(*static_cast<const __int128_t *>(value));
+			break;
+	default:ret = nullptr;
 			std::cerr << "convertlittleendian(): Illegal size (" << length << "!" << std::endl;
 			break;
 	}
