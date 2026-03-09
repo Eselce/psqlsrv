@@ -277,14 +277,14 @@ int DBrecordset::getNRows(void) const
 
 int DBrecordset::getNFields(void) const
 {
-	return this->nFields;
+	return this->m_pStmt->getNFields();
 }
 
 const char *DBrecordset::getValue(const int field, const char *defaultValue) const
 {
 	int i = field - 1;  // Adjust for 1-based indexing
 
-	if (i < 0 || i >= this->nFields) {
+	if (i < 0 || i >= this->getNFields()) {
 		return defaultValue;
 	}
 
@@ -294,7 +294,7 @@ const char *DBrecordset::getValue(const int field, const char *defaultValue) con
 const char *DBrecordset::getValue(const char *fieldName, const char *defaultValue) const
 {
 /*
-	for (int i = 0; i < this->nFields; ++i) {
+	for (int i = 0; i < this->getNFields(); ++i) {
 		if (strcmp(this->getFieldName(i), fieldName) == 0) {
 			return this->getValue(i, defaultValue);
 		}

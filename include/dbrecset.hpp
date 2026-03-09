@@ -91,6 +91,8 @@ protected:
 
 	DBanswer *m_pAnswer;
 
+	// The following are for recset infrastructure!
+	// For data base issues, refer to m_pStmt!
 	int nFields;
 
 	int nRows;
