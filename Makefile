@@ -1,8 +1,8 @@
 CXX        := g++
 #CXX        := clang
 WFLAGS     := -Wall -Wextra
-DEBFLAGS   := -g -D_DEBUG
-RELFLAGS   := -O2 -DNDEBUG
+DEBFLAGS   := -D_DEBUG -O0 -g
+RELFLAGS   := -DNDEBUG -O2
 CPPNUMBER  := 20
 SRCDIR     := src
 INCLUDEDIR := include
