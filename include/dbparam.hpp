@@ -5,28 +5,9 @@
 
 #include <string>
 
+#include <ctime>
+
 #include "db_type.h"
-
-typedef union element
-{
-	signed int s_int;
-	unsigned int u_int;
-	int m_int;
-
-	signed short int s_short;
-	unsigned short int u_short;
-	short int m_short;
-
-	signed long int s_long;
-	unsigned long int u_long;
-	long int m_long;
-
-	float m_float;
-
-	double m_double;
-
-	char m_char;
-} parameter;
 
 class DBparameter
 {
@@ -71,9 +52,29 @@ public:
 	virtual int parsevar(const signed long int &value, const int pos, const char *str = nullptr);
 	virtual int parsevar(const unsigned long int &value, const int pos, const char *str = nullptr);
 
+	virtual int parsevar(const __int128_t &value, const int pos, const char *str = nullptr);//
+	virtual int parsevar(const __uint128_t &value, const int pos, const char *str = nullptr);//
+
 	virtual int parsevar(const float &value, const int pos, const char *str = nullptr);
 
 	virtual int parsevar(const double &value, const int pos, const char *str = nullptr);
+
+	virtual int parsevar(const long double &value, const int pos, const char *str = nullptr);//
+
+	virtual int parsevar(const bool &value, const int pos, const char *str = nullptr);//
+
+	virtual int parsevar(const signed char &value, const int pos, const char *str = nullptr);//
+	virtual int parsevar(const unsigned char &value, const int pos, const char *str = nullptr);//
+
+	virtual int parsevar(const char16_t &value, const int pos, const char *str = nullptr);//
+
+	virtual int parsevar(const char32_t &value, const int pos, const char *str = nullptr);//
+
+	virtual int parsevar(const void *value, const int pos, const char *str = nullptr);//
+
+	virtual int parsevar(const std::time_t *value, const int pos, const char *str = nullptr);//
+
+	virtual int parsevar(const std::tm *value, const int pos, const char *str = nullptr);//
 
 	virtual int parsevar(const std::string &value, const int pos, const char *str = nullptr);
 
@@ -109,9 +110,29 @@ protected:
 	virtual void bindvar(const signed long int &value, const int pos);
 	virtual void bindvar(const unsigned long int &value, const int pos);
 
+	virtual void bindvar(const __int128_t &value, const int pos);//
+	virtual void bindvar(const __uint128_t &value, const int pos);//
+
 	virtual void bindvar(const float &value, const int pos);
 
 	virtual void bindvar(const double &value, const int pos);
+
+	virtual void bindvar(const long double &value, const int pos);//
+
+	virtual void bindvar(const bool &value, const int pos);//
+
+	virtual void bindvar(const signed char &value, const int pos);//
+	virtual void bindvar(const unsigned char &value, const int pos);//
+
+	virtual void bindvar(const char16_t &value, const int pos);//
+
+	virtual void bindvar(const char32_t &value, const int pos);//
+
+	virtual void bindvar(const void *value, const int pos);//
+
+	virtual void bindvar(const std::time_t *value, const int pos);//
+
+	virtual void bindvar(const std::tm *value, const int pos);//
 
 	virtual void bindvar(const std::string &value, const int pos);
 
@@ -128,6 +149,6 @@ protected:
 
 	DBparameterFormat *m_formats;
 
-	int64_t *m_valbuffer;
+	PARAMETER *m_valbuffer;
 };
 
